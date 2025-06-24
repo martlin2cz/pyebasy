@@ -201,3 +201,6 @@ cache.db
 cache.sqlite
 source.db
 destination.db
+
+# logfiles
+pyebasy.log
