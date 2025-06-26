@@ -2,31 +2,28 @@ from typing import Union
 
 from pathlib import Path
 
-from base_commons import Cache
-from datas import File, Directory
+from commons_base import Cache
+from datas import File, Directory, StorageElement
 
 
 class InMemoryCache(Cache):
+    """ The simple, in-memory cache implmentation. """
+
     def __init__(self):
-        self._store = {}
+        self.files = {}
+        self.directories = {}
 
     def store_file(self, file: File):
-        if file.path in self._store:
-            raise KeyError(f'File {file.path} already in the cache')
-
-        self._store[file.path] = file
+        self.files[file.path] = file
 
     def store_directory(self, directory: Directory):
-        if directory.path in self._store:
-            raise KeyError(f'Directory {directory.path} already in the cache')
+        self.directories[directory.path] = directory
 
-        self._store[directory.path] = directory
+    def has(self, path: Path) -> bool:
+        return path in self.files or path in self.directories
 
-    def has(self, path: Path):
-        return path in self._store
+    def get(self, path: Path) -> StorageElement:
+        return self.files.get(path) or self.directories.get(path)
 
-    def get(self, path: Path) -> Union[File, Directory]:
-        if path not in self._store:
-            raise KeyError(f'No file or directory with a path {path} in the cache')
-
-        return self._store.get(path)
+    def __str__(self):
+        return f"InMemoryCache: files={len(self.files)}, directories={len(self.directories)})"

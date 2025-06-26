@@ -1,9 +1,10 @@
 from abc import ABC
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
-from datas import File, Directory
+from datas import File, Directory, StorageElement
+
 
 ########################################################################################################################
 
@@ -31,3 +32,24 @@ class Storage(ABC):
         pass
 
 ########################################################################################################################
+
+
+class Cache(ABC):
+    """ The local cache of the storage data. """
+
+    def store_file(self, file: File):
+        """ Stores the specified file into the cache. """
+        pass
+
+    def store_directory(self, directory: Directory):
+        """ Stores the specified directory into the cache. """
+        pass
+
+    def has(self, path: Path) -> bool:
+        """ Tells whether file or directory with a specified path exists in the cache or not. """
+        pass
+
+    def get(self, path: Path) -> StorageElement:
+        """ Retrieves either the specified file or directory. """
+        pass
+
