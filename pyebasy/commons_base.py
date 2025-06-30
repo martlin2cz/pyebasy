@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Union
 
-from datas import File, Directory, StorageElement
+from datas import File, Directory, StorageElement, DirectoryContentsDifference
 
 
 ########################################################################################################################
@@ -61,4 +61,14 @@ class CacheUpdater(ABC):
 
     def update(self, storage_lister: StorageLister, cache: Cache):
         """ By using the storage lister, updates the cache. """
+        pass
+
+########################################################################################################################
+
+
+class DirectoryContentsComparer(ABC):
+    """ The tool which computes DirectoryContentsDifference for the two DirectoryContents (source and destination) """
+
+    def compute(self, source_contents: DirectoryContents, destination_contents: DirectoryContents) -> DirectoryContentsDifference:
+        """ Computes the difference between the source and destination directory contents. """
         pass

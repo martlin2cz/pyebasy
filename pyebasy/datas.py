@@ -1,6 +1,10 @@
 from dataclasses import dataclass
 from datetime import datetime, date, time
+from typing import List
+
 from pathlib import Path
+
+########################################################################################################################
 
 
 @dataclass(frozen=True)
@@ -29,3 +33,18 @@ class TopDirectory(Directory):
 
     def __init__(self, path: Path):
         super().__init__(path, datetime.combine(date.today(), time()))
+
+
+########################################################################################################################
+
+
+@dataclass(frozen=True)
+class DirectoryContentsDifference:
+    directories_to_add: List[Directory]
+    directories_to_remove: List[Directory]
+    directories_to_keep: List[Directory]
+
+    files_to_add: List[File]
+    files_to_remove: List[File]
+    files_to_update: List[File]
+    files_to_keep: List[File]
