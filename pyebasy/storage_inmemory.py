@@ -5,7 +5,7 @@ from pathlib import Path
 
 from commons_base import DirectoryContents, StorageLister
 from commons_helpers import CommonStorage, DirectoryContentsBuilder
-from datas import Directory, File, StorageElement
+from datas import Directory, File, StorageElement, TopDirectory
 
 
 class InMemoryStore:
@@ -22,15 +22,17 @@ class InMemoryStore:
         """ Adds new file or directory. """
 
         path = file_or_directory.path
-        owner_path = path.parent
-        contents = self.resources[owner_path]
 
-        builder = DirectoryContentsBuilder.from_existing(contents)
-        builder.add(file_or_directory)
+        if not isinstance(file_or_directory, TopDirectory):
+            owner_path = path.parent
+            contents = self.resources[owner_path]
 
-        self.resources[owner_path] = builder.build()
+            builder = DirectoryContentsBuilder.from_existing(contents)
+            builder.add(file_or_directory)
 
-        if type(file_or_directory) == Directory:
+            self.resources[owner_path] = builder.build()
+
+        if isinstance(file_or_directory, Directory):
             self.resources[path] = DirectoryContents([], [])
 
 

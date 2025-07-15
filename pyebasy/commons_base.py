@@ -53,3 +53,12 @@ class Cache(ABC):
         """ Retrieves either the specified file or directory. """
         pass
 
+########################################################################################################################
+
+
+class CacheUpdater(ABC):
+    """ The tool which utilise the StorageLister to fill and update the Cache instance. """
+
+    def update(self, storage_lister: StorageLister, cache: Cache):
+        """ By using the storage lister, updates the cache. """
+        pass

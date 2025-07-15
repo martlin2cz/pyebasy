@@ -4,7 +4,7 @@ import sqlite3
 from datetime import datetime
 
 from commons_base import Cache
-from datas import File, Directory, StorageElement
+from datas import File, Directory, StorageElement, TopDirectory
 
 
 ########################################################################################################################
@@ -167,8 +167,12 @@ class SqliteCache(Cache):
     def get_directory(self, path):
         row = self.directories.select_one("path = ?", [str(path)])
         if row:
-            return Directory(
-                path=Path(row["path"]),
-                date_of_creation=datetime.fromisoformat(row["date_of_creation"])
-            )
+            path = Path(row["path"]);
+            has_parent_path = self.has(path.parent) # FIXME: extremmelly inefficient (recursive search)!
+
+            if has_parent_path:
+                date_of_creation = datetime.fromisoformat(row["date_of_creation"])
+                return Directory(path=path, date_of_creation=date_of_creation)
+            else:
+                return TopDirectory(path=path)
 
