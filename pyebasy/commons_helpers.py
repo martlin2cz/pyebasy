@@ -1,6 +1,6 @@
 from typing import Union
 
-from commons_base import DirectoryContents, Storage, StorageLister
+from commons_base import DirectoryContents, Storage, StorageLister, StorageModifier, FileContentsSupplier
 from datas import Directory, File, StorageElement
 
 
@@ -8,16 +8,24 @@ from datas import Directory, File, StorageElement
 
 
 class CommonStorage(Storage):
-    """ The convience storage, which stores the lister as a field. """
+    """ The convience storage, which stores the lister, modifier and contents supplier as the fields. """
 
-    def __init__(self, lister: StorageLister):
-        self.lister = lister
+    def __init__(self, lister: StorageLister, modifier: StorageModifier, contents_supplier: FileContentsSupplier):
+        self._lister = lister
+        self._modifier = modifier
+        self._contents_supplier = contents_supplier
 
     def lister(self) -> StorageLister:
-        return self.lister
+        return self._lister
 
+    def modifier(self) -> StorageModifier:
+        return self._modifier
+
+    def contents_supplier(self) -> FileContentsSupplier:
+        return self._contents_supplier
 
 ########################################################################################################################
+
 
 class DirectoryContentsBuilder:
     """ The mutable builder of the DirectoryContents instances. """

@@ -15,6 +15,17 @@ class DirectoryContents:
     child_files: List[File]
     child_directories: List[Directory]
 
+    def get(self, name: str) -> StorageElement:
+        the_files = [f for f in self.child_files if f.path.name == name]
+        the_directories = [d for d in self.child_directories if d.path.name == name]
+
+        elements = [*the_files, *the_directories]
+        return elements[0]
+
+    def is_empty(self) -> bool:
+        """ Returns true if the contents of a directory is empty. """
+        return len(self.child_files) == 0 and len(self.child_directories) == 0
+
 
 class StorageLister(ABC):
     """ The abstract storage lister. Performs the quering of the current status of the storage."""
@@ -24,12 +35,60 @@ class StorageLister(ABC):
         pass
 
 
+class FileContentsSupplier(ABC):
+    """ The helper of the storage, which tells where the actual file contents is stored,
+    and if nescessary stores (downloads) it somewhere temporary. """
+
+    def get_file_contents(self, file: File) -> Path:
+        """ Returns the path of the local filesystem file containing the specified file's contents.
+        Keep in mind that if such file doesn't exist (for example, the file is somewhere in the cloud or something),
+        this method will ensure its creation. """
+        pass
+
+    def is_file_contents_temporary(self, file: File) -> bool:
+        """ Returns true whether the contents file contains is temporary or permanent. """
+        pass
+
+
+class StorageModifier(ABC):
+    """ The abstract storage modifier. Performs the modification of the current status of the storage. """
+
+    def create_directory(self, owner_directory_path: Path, directory: Directory):
+        """ Creates the specified child directory in the given directory. """
+        pass
+
+    def remove_directory(self, owner_directory_path: Path, directory: Directory):
+        """ Removes the specified child directory from the given directory. """
+        pass
+
+    def create_file(self, owner_directory_path: Path, file: File, contents_supplier: FileContentsSupplier):
+        """ Creates the specified child file in the given directory to have the specified contents. """
+        pass
+
+    def remove_file(self, owner_directory_path: Path, file: File):
+        """ Removes the specified child file from the given directory. """
+        pass
+
+    def update_file(self, owner_directory_path: Path, file: File, contents_supplier: FileContentsSupplier):
+        """ Updates the specified child file in the given directory, to have the specified contents. """
+        pass
+
+
 class Storage(ABC):
-    """ The abstract storage. Provides only the lister (for now). """
+    """ The abstract storage. Provides only the lister, modifier and contents supplier. """
 
     def lister(self) -> StorageLister:
         """ Returns the lister. """
         pass
+
+    def modifier(self) -> StorageModifier:
+        """ Returns the modifier. """
+        pass
+
+    def contents_supplier(self) -> FileContentsSupplier:
+        """ Returns the contents supplier. """
+        pass
+
 
 ########################################################################################################################
 
@@ -63,8 +122,6 @@ class CacheUpdater(ABC):
         """ By using the storage lister, updates the cache. """
         pass
 
-########################################################################################################################
-
 
 class DirectoryContentsComparer(ABC):
     """ The tool which computes DirectoryContentsDifference for the two DirectoryContents (source and destination) """
@@ -72,3 +129,5 @@ class DirectoryContentsComparer(ABC):
     def compute(self, source_contents: DirectoryContents, destination_contents: DirectoryContents) -> DirectoryContentsDifference:
         """ Computes the difference between the source and destination directory contents. """
         pass
+
+########################################################################################################################
