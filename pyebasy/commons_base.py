@@ -132,3 +132,11 @@ class DirectoryContentsComparer(ABC):
         pass
 
 ########################################################################################################################
+
+
+class DirectoryContentsDifferencePerformer(ABC):
+    """ The tool which applies the directory contents difference to a particular storage directory. """
+
+    def execute(self, directory_path: Path, diff: DirectoryContentsDifference, contents_supplier: FileContentsSupplier, storage_modifier: StorageModifier):
+        """ Executes the directory contents difference in the specified storage. """
+        pass
