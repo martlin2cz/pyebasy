@@ -13,7 +13,7 @@ from storage_inmemory import InMemoryStore, InMemoryStorageLister
 class TestInMemoryStore(TestCase):
     def test_in_memory_store_structure(self):
         store = InMemoryStore()
-        some_testing_data.foreach_element(True,
+        some_testing_data.foreach_element(True,False,
             lambda e: store.add(e)
         )
 
@@ -35,7 +35,7 @@ class TestInMemoryStore(TestCase):
 class TestInMemoryStorageLister(TestCase):
     def test_list_directory(self):
         store = InMemoryStore()
-        some_testing_data.foreach_element(True,
+        some_testing_data.foreach_element(True,False,
             lambda e: store.add(e)
         )
 

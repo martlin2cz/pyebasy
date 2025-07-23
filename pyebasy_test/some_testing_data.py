@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Callable
 from unittest import TestCase
 
@@ -7,6 +7,8 @@ from pathlib import Path
 from datas import Directory, File, StorageElement, TopDirectory
 
 NOW = datetime.now()
+LATER_NOW = NOW + timedelta(seconds=1)
+
 ROOT_DIRECTORY_PATH = Path("testing-files")
 
 # Directories
@@ -20,11 +22,34 @@ QUUX_DIRECTORY = Directory(ROOT_DIRECTORY_PATH/"qux"/"quux", NOW)
 
 # Files
 LOREM_FILE = File(ROOT_DIRECTORY_PATH/"foo"/"bar"/"baz"/"lorem.txt", NOW, 123,  NOW)
-IPSUM_FILE = File(ROOT_DIRECTORY_PATH/"foo"/"bar"/"_aux_"/"ipsum.txt", NOW,789, NOW)
-DOLOR_FILE = File(ROOT_DIRECTORY_PATH/"foo"/"bar"/"_aux_"/"dolor.txt", NOW,456, NOW)
+IPSUM_FILE = File(ROOT_DIRECTORY_PATH/"foo"/"bar"/"_aux_"/"ipsum.txt", NOW, 789, NOW)
+DOLOR_FILE = File(ROOT_DIRECTORY_PATH/"foo"/"bar"/"_aux_"/"dolor.txt", NOW, 456, NOW)
 SIT_FILE = File(ROOT_DIRECTORY_PATH/"qux"/"quux"/"sit.txt", NOW, 987, NOW)
 LIPSUM_FILE = File(ROOT_DIRECTORY_PATH/"lipsum.txt", NOW, 321, NOW)
 
+# Additional directories
+QUICK_DIRECTORY = Directory(ROOT_DIRECTORY_PATH/"quick", NOW)
+BROWN_DIRECTORY = Directory(ROOT_DIRECTORY_PATH/"foo"/"brown", NOW)
+FOX_DIRECTORY = Directory(ROOT_DIRECTORY_PATH/"foo"/"fox", NOW)
+
+# Additional files
+LAZY_FILE = File(ROOT_DIRECTORY_PATH/"lazy.txt", NOW, 111, NOW)
+BROWN_FILE = File(ROOT_DIRECTORY_PATH/"foo"/"brown.txt", NOW, 222, NOW)
+DOG_FILE = File(ROOT_DIRECTORY_PATH/"foo"/"dog.txt", NOW, 333, NOW)
+
+# Modified files
+MODIFIED_LOREM_FILE = File(LOREM_FILE.path, NOW, 1230, LATER_NOW)
+MODIFIED_IPSUM_FILE = File(IPSUM_FILE.path, NOW, 7890, LATER_NOW)
+MODIFIED_DOLOR_FILE = File(DOLOR_FILE.path, NOW, 4560, LATER_NOW)
+MODIFIED_SIT_FILE = File(SIT_FILE.path, NOW, 9870, LATER_NOW)
+MODIFIED_LIPSUM_FILE = File(LIPSUM_FILE.path, LATER_NOW, 3210, LATER_NOW)
+
+# Modified additional files
+MODIFIED_LAZY_FILE = File(LAZY_FILE.path, NOW, 1110, LATER_NOW)
+MODIFIED_BROWN_FILE = File(BROWN_FILE.path, NOW, 2230, LATER_NOW)
+MODIFIED_DOG_FILE = File(DOG_FILE.path, NOW, 3330, LATER_NOW)
+
+# The all elements
 ALL_ELEMENTS = [
     FOO_DIRECTORY, BAR_DIRECTORY, BAZ_DIRECTORY, LOREM_FILE,
     AUX_DIRECTORY, IPSUM_FILE, DOLOR_FILE,
@@ -32,49 +57,35 @@ ALL_ELEMENTS = [
     LIPSUM_FILE
 ]
 
+ALL_ADITIONAL_ELEMENTS = [
+    QUICK_DIRECTORY,
+    BROWN_DIRECTORY, FOX_DIRECTORY,
+    LAZY_FILE,
+    BROWN_FILE, DOG_FILE
+]
 
-def foreach_element(include_root_dir: bool, fn: Callable[[StorageElement], None]):
+
+def foreach_element(include_root_dir: bool, include_aditionals: bool, fn: Callable[[StorageElement], None]):
     """ Executes given function for each testing file and directory. """
 
     if include_root_dir:
         fn(ROOT_DIRECTORY)
 
-    for element in ALL_ELEMENTS:
+    elements = [*ALL_ELEMENTS, *ALL_ADITIONAL_ELEMENTS] if include_aditionals else [*ALL_ELEMENTS]
+    for element in elements:
         fn(element)
 
 
-def foreach_file_and_directory(include_root_dir: bool, directory_fn: Callable[[Directory], None], file_fn: Callable[[File], None]):
+def foreach_file_and_directory(include_root_dir: bool, include_aditionals: bool, directory_fn: Callable[[Directory], None], file_fn: Callable[[File], None]):
     """ Executes given functions for each testing file and directory. """
 
     if include_root_dir:
         directory_fn(ROOT_DIRECTORY)
 
-    for element in ALL_ELEMENTS:
+    elements = [*ALL_ELEMENTS, *ALL_ADITIONAL_ELEMENTS] if include_aditionals else [*ALL_ELEMENTS]
+    for element in elements:
         if type(element) is Directory:
             directory_fn(element)
 
         if type(element) is File:
             file_fn(element)
-
-
-class TestSomeTestingData(TestCase):
-
-    def test_foreach_element(self):
-        foreach_element(True,
-            lambda e: print(f"Element (root incl.): {e}")
-        )
-
-        foreach_element(False,
-            lambda e: print(f"Element (root excl.): {e}")
-        )
-
-    def test_foreach_directory_and_file(self):
-        foreach_file_and_directory(True,
-            lambda d: print(f"Directory (root incl.): {d}"),
-            lambda f: print(f"File      (root incl.): {f}")
-        )
-
-        foreach_file_and_directory(False,
-            lambda d: print(f"Directory (root excl.): {d}"),
-            lambda f: print(f"File:     (root excl.): {f}")
-        )
