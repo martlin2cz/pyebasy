@@ -1,8 +1,7 @@
+from datetime import datetime
 import os
 import pathlib
 import shutil
-from datetime import datetime
-
 from pathlib import Path
 
 from commons_base import Storage, StorageLister, DirectoryContents, StorageModifier, FileContentsSupplier

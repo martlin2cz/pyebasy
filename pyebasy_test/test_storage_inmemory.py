@@ -1,5 +1,6 @@
 import os
 from unittest import TestCase
+
 from pathlib import Path
 
 import some_testing_data
@@ -63,8 +64,8 @@ class TestInMemoryStore(TestCase):
     def test_get(self):
         store = InMemoryStore()
         some_testing_data.foreach_element(True, False,
-                                          lambda e: store.add(e)
-                                          )
+            lambda e: store.add(e)
+        )
 
         # Check contents of a few directories
         foo_contents = store.get(Path("testing-files"))
@@ -86,14 +87,13 @@ class TestInMemoryStorageLister(TestCase):
     def setUp(self):
         store = InMemoryStore()
         some_testing_data.foreach_element(True, False,
-                                          lambda e: store.add(e)
-                                          )
+            lambda e: store.add(e)
+        )
 
         self.lister = InMemoryStorageLister(store)
 
     def test_list_directory(self):
         contents = self.lister.list_directory(some_testing_data.ROOT_DIRECTORY_PATH)
-
         self.assertIn(some_testing_data.FOO_DIRECTORY, contents.child_directories)
         self.assertIn(some_testing_data.LIPSUM_FILE, contents.child_files)
 

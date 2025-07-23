@@ -134,4 +134,4 @@ class InMemoryStorage(CommonStorage):
     """
 
     def __init__(self, store = InMemoryStore()):
-        super().__init__(InMemoryStorageLister(store), InMemoryStorageModifier(store))
+        super().__init__(InMemoryStorageLister(store), InMemoryStorageModifier(store), InMemoryFileContentsSupplier())

@@ -122,6 +122,7 @@ class CacheUpdater(ABC):
         """ By using the storage lister, updates the cache. """
         pass
 
+########################################################################################################################
 
 class DirectoryContentsComparer(ABC):
     """ The tool which computes DirectoryContentsDifference for the two DirectoryContents (source and destination) """
