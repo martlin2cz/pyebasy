@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import Union
 
 import tempfile
+
+import pathlib
 from pathlib import Path
 
 from commons_base import DirectoryContents, StorageLister, StorageModifier, FileContentsSupplier
@@ -13,56 +15,50 @@ class InMemoryStore:
     """ THe helper structure holding the imaginary, in memory, storage data. """
 
     def __init__(self):
-        self.resources = {Path("."): DirectoryContents([], [])}
+        self.resources = {}
 
-    def get(self, path: Path) -> DirectoryContents:
-        """ Returns the contents of the specified directory path. """
+    def _verify_path(self, path):
+        """ Makes sure the specified path points to an existing directory """
+        if path not in self.resources:
+            raise KeyError(f"No such directory {path} in {self.resources.keys()}")
+
+        directory = self.resources[path]
+        if not isinstance(directory, Directory):
+            raise KeyError(f"The {path} is not directory, but {directory}")
+
+    def get_element(self, path: Path) -> StorageElement:
+        """ Returns the file/directory with the given path """
         return self.resources[path]
+
+    def get_children(self, path: Path) -> DirectoryContents:
+        """ Returns the contents of the specified directory path. """
+
+        self._verify_path(path)
+
+        children = [e for p, e in self.resources.items() if p.parent == path]
+        child_directories = [e for e in children if isinstance(e, Directory) and e.path != path] #FIXME: for the parent = "." case
+        child_files = [e for e in children if isinstance(e, File)]
+
+        return DirectoryContents(child_files, child_directories)
 
     def add(self, file_or_directory: StorageElement):
         """ Adds new file or directory. """
 
         path = file_or_directory.path
+        if len(self.resources) > 0:  # we allways allow to add when empty
+            parent_path = path.parent
+            self._verify_path(parent_path)
 
-        if not isinstance(file_or_directory, TopDirectory):
-            owner_path = path.parent
-            contents = self.resources[owner_path]
-
-            builder = DirectoryContentsBuilder.from_existing(contents)
-            builder.add(file_or_directory)
-
-            self.resources[owner_path] = builder.build()
-
-        if isinstance(file_or_directory, Directory):
-            self.resources[path] = DirectoryContents([], [])
+        self.resources[path] = file_or_directory
 
     def remove(self, file_or_directory: StorageElement):
         """ Removes the existing file or directory. """
 
         path = file_or_directory.path
-
-        # verify the operation can be safelly performed
-        if isinstance(file_or_directory, TopDirectory):
-            raise ValueError("You cannot delete the TopDirectory!")
-
-        if isinstance(file_or_directory, Directory):
-            contents = self.get(path)
-            if not contents.is_empty():
-                raise ValueError("Directory not empty")
-
-        # remove from the parent list
         parent_path = path.parent
-        parent_children = self.get(parent_path)
+        self._verify_path(parent_path)
 
-        if isinstance(file_or_directory, Directory):
-            parent_children.child_directories.remove(file_or_directory)
-
-        if isinstance(file_or_directory, File):
-            parent_children.child_files.remove(file_or_directory)
-
-        # if directory, remove its contents
-        if isinstance(file_or_directory, Directory):
-            del self.resources[path]
+        del self.resources[path]
 
     def replace(self, original_file_or_directory: StorageElement, new_file_or_directory: StorageElement):
         """ Replaces the existing file or directory by another one. """
@@ -77,17 +73,17 @@ class InMemoryStore:
 class InMemoryStorageLister(StorageLister):
     """ The storage lister based on the InMemoryStore. """
 
-    def __init__(self, store: InMemoryStore):
+    def __init__(self, store=InMemoryStore()):
         self.store = store
 
     def list_directory(self, path: Path) -> DirectoryContents:
-        return self.store.get(path)
+        return self.store.get_children(path)
 
 
 class InMemoryStorageModifier(StorageModifier):
     """ The storage modifier based on the InMemoryStore. """
 
-    def __init__(self, store: InMemoryStore):
+    def __init__(self, store=InMemoryStore()):
         self.store = store
 
     def create_directory(self, owner_directory_path: Path, directory: Directory):
@@ -103,8 +99,7 @@ class InMemoryStorageModifier(StorageModifier):
         self.store.remove(file)
 
     def update_file(self, owner_directory_path: Path, file: File, contents_supplier: FileContentsSupplier):
-        current_parent_children = self.store.get(owner_directory_path)
-        current_file = current_parent_children.get(file.path.name)
+        current_file = self.store.get_element(file.path)
 
         self.store.replace(current_file, file)
 
