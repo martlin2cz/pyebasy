@@ -106,6 +106,7 @@ class SqliteCache(Cache):
         self.conn = sqlite3.connect(db_path)
         self.files = SqliteTableHelper(self.conn, "files", {
             "path": "TEXT PRIMARY KEY",
+            "parent_path": "TEXT",
             "size": "INTEGER",
             "date_of_creation": "TEXT",
             "date_of_last_modification": "TEXT"
@@ -113,22 +114,28 @@ class SqliteCache(Cache):
 
         self.directories = SqliteTableHelper(self.conn, "directories",{
             "path": "TEXT PRIMARY KEY",
+            "parent_path": "TEXT",
             "date_of_creation": "TEXT"
         })
 
     def store_file(self, file: File):
 
         self.files.insert_into({
-            "path": str(file.path),
+            "path": self._path_to_str(file.path),
+            "parent_path": self._path_to_str(file.path.parent),
             "size": file.size,
             "date_of_creation": file.date_of_creation.isoformat(),
             "date_of_last_modification": file.date_of_last_modification.isoformat()
         })
 
     def store_directory(self, directory: Directory):
+        parent_path = self._path_to_str(directory.path.parent) \
+            if not isinstance(directory, TopDirectory) \
+            else None
 
         self.directories.insert_into({
-            "path": str(directory.path),
+            "path": self._path_to_str(directory.path),
+            "parent_path": parent_path,
             "date_of_creation": directory.date_of_creation.isoformat()
         })
 
@@ -155,7 +162,7 @@ class SqliteCache(Cache):
         raise ValueError(f"No such storage element with path {path}")
 
     def get_file(self, path: Path):
-        row = self.files.select_one("path = ?", [str(path)])
+        row = self.files.select_one("path = ?", [self._path_to_str(path)])
         if row:
             return File(
                 path=Path(row["path"]),
@@ -165,10 +172,10 @@ class SqliteCache(Cache):
             )
 
     def get_directory(self, path):
-        row = self.directories.select_one("path = ?", [str(path)])
+        row = self.directories.select_one("path = ?", [self._path_to_str(path)])
         if row:
-            path = Path(row["path"]);
-            has_parent_path = self.has(path.parent) # FIXME: extremmelly inefficient (recursive search)!
+            has_parent_path = row["parent_path"]
+            path = Path(row["path"])
 
             if has_parent_path:
                 date_of_creation = datetime.fromisoformat(row["date_of_creation"])
@@ -176,3 +183,8 @@ class SqliteCache(Cache):
             else:
                 return TopDirectory(path=path)
 
+    def _path_to_str(self, path: Path):
+        if str(path) != ".":
+            return "./" + path.as_posix()
+        else:
+            return "."
