@@ -3,7 +3,7 @@ from typing import Dict, List, Tuple
 import sqlite3
 from datetime import datetime
 
-from commons_base import Cache
+from commons_base import Cache, DirectoryContents
 from datas import File, Directory, StorageElement, TopDirectory, ADirectory
 
 
@@ -148,6 +148,17 @@ class SqliteCache(Cache):
                 "date_of_creation": None
             })
 
+    def get_contents(self, path: Path) -> DirectoryContents:
+        owner_path_str = self._path_to_str(path)
+
+        files_rows = self.files.select_from("parent_path == ?", [owner_path_str])
+        files = [self._row_to_file(r) for r in files_rows]
+
+        directories_rows = self.directories.select_from("parent_path == ?", [owner_path_str])
+        directories = [self._row_to_directory(r) for r in directories_rows]
+
+        return DirectoryContents(files, directories)
+
     def has(self, path: Path) -> bool:
         file = self.get_file(path)
         if file:
@@ -173,24 +184,29 @@ class SqliteCache(Cache):
     def get_file(self, path: Path):
         row = self.files.select_one("path = ?", [self._path_to_str(path)])
         if row:
-            return File(
-                path=Path(row["path"]),
-                size=row["size"],
-                date_of_creation=datetime.fromisoformat(row["date_of_creation"]),
-                date_of_last_modification=datetime.fromisoformat(row["date_of_last_modification"])
-            )
+            return self._row_to_file(row)
 
     def get_directory(self, path):
         row = self.directories.select_one("path = ?", [self._path_to_str(path)])
         if row:
-            has_parent_path = row["parent_path"]
-            path = Path(row["path"])
+            return self._row_to_directory(row)
 
-            if has_parent_path:
-                date_of_creation = datetime.fromisoformat(row["date_of_creation"])
-                return Directory(path=path, date_of_creation=date_of_creation)
-            else:
-                return TopDirectory()
+    def _row_to_file(self, row) -> File:
+        return File(
+            path=Path(row["path"]),
+            size=row["size"],
+            date_of_creation=datetime.fromisoformat(row["date_of_creation"]),
+            date_of_last_modification=datetime.fromisoformat(row["date_of_last_modification"]))
+
+    def _row_to_directory(self, row) -> Directory:
+        has_parent_path = row["parent_path"]
+        path = Path(row["path"])
+
+        if has_parent_path:
+            date_of_creation = datetime.fromisoformat(row["date_of_creation"])
+            return Directory(path=path, date_of_creation=date_of_creation)
+        else:
+            return TopDirectory()
 
     def _path_to_str(self, path: Path):
         if str(path) != ".":

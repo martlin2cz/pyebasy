@@ -1,10 +1,13 @@
 from abc import ABC
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Union
+from typing import List, Union, Iterable, Dict
 
-from datas import File, Directory, StorageElement, DirectoryContentsDifference, CommonStorageElement, ADirectory
+from datas import File, Directory, StorageElement, DirectoryContentsDifference, CommonStorageElement, ADirectory, \
+    CachesDifference
 
+""" The path to the root of the synchronisation. """
+ROOT_PATH=Path(".")
 
 ########################################################################################################################
 
@@ -112,6 +115,10 @@ class Cache(ABC):
         """ Retrieves either the specified file or directory. """
         pass
 
+    def get_contents(self, path: Path) -> DirectoryContents:
+        """ Assuming the path points to a directory, retrieves the contents of that directory. """
+        pass
+
 ########################################################################################################################
 
 
@@ -129,6 +136,14 @@ class DirectoryContentsComparer(ABC):
 
     def compute(self, source_contents: DirectoryContents, destination_contents: DirectoryContents) -> DirectoryContentsDifference:
         """ Computes the difference between the source and destination directory contents. """
+        pass
+
+
+class CacheComparer(ABC):
+    """ The tool which computes stream of DirectoryContentsDifference (the CachesDifference) for the two Caches (source and destination) """
+
+    def compute(self, source: Cache, destination: Cache) -> CachesDifference:
+        """ Computes the difference between the source and destination caches. """
         pass
 
 ########################################################################################################################

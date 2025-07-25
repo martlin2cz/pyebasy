@@ -3,15 +3,16 @@ from abc import ABC
 import pathlib
 from dataclasses import dataclass
 from datetime import datetime, date, time
-from typing import List
+from typing import List, Set, Dict
 
+import pathlib
 from pathlib import Path
 
 
 ########################################################################################################################
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class StorageElement:
     """ The common superclass for the files, directories any other kinds of file system elements. """
 
@@ -69,6 +70,9 @@ class Directory(CommonStorageElement, ADirectory):
 
 @dataclass(frozen=True)
 class DirectoryContentsDifference:
+    """ The difference between two directories. Contains files and directories which are same, modified, missing in one
+     and present in the other. """
+
     directories_to_add: List[Directory]
     directories_to_remove: List[Directory]
     directories_to_keep: List[Directory]
@@ -77,3 +81,43 @@ class DirectoryContentsDifference:
     files_to_remove: List[File]
     files_to_update: List[File]
     files_to_keep: List[File]
+
+    def all_directories(self) -> List[Directory]:
+        """ Returns the all directories involved. """
+        return sorted({*self.directories_to_add, *self.directories_to_remove, *self.directories_to_keep})
+
+    def all_files(self) -> List[Directory]:
+        """ Returns all the files involved. """
+        return sorted({*self.files_to_add, *self.files_to_remove, *self.files_to_update, *self.files_to_keep})
+
+    def has_some_changes(self) -> bool:
+        """ Returns true, if contains some changes."""
+        return len([*self.directories_to_add, *self.directories_to_remove,
+                    *self.files_to_add, *self.files_to_remove, *self.files_to_update]) > 0
+
+    def __str__(self):
+        return (f"DirectoryContentsDifference: "
+                f"directories {len(self.all_directories())} ("
+                f"add: {len(self.directories_to_add)}, "
+                f"remove: {len(self.directories_to_remove)}, "
+                f"keep: {len(self.files_to_add)}"
+                f"), "
+                f"files: {len(self.all_files())} ("
+                f"add: {len(self.files_to_add)}, "
+                f"remove: {len(self.files_to_remove)}, "
+                f"update: {len(self.files_to_update)}, "
+                f"keep: {len(self.files_to_update)}"
+                ")")
+
+
+@dataclass(frozen=True)
+class CachesDifference:
+    """ The different of two caches. Contains the directory differences for each directory. """
+
+    directories_changes: Dict[pathlib.Path, DirectoryContentsDifference]
+
+    def __str__(self):
+        return (f"CachesDifference: "
+                f"directories: {len(self.directories_changes)}, "
+                f"with some changes {(len([dch for dch in self.directories_changes.values() if dch.has_some_changes()]))}")
+

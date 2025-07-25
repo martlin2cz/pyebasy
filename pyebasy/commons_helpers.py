@@ -1,7 +1,7 @@
 from typing import Union
 
 from commons_base import DirectoryContents, Storage, StorageLister, StorageModifier, FileContentsSupplier
-from datas import Directory, File, StorageElement, CommonStorageElement
+from datas import Directory, File, StorageElement, CommonStorageElement, DirectoryContentsDifference
 
 
 ########################################################################################################################
@@ -59,3 +59,44 @@ class DirectoryContentsBuilder:
         return DirectoryContents(self.files, self.directories)
 
 ########################################################################################################################
+
+
+class DirectoryContentsDifferencesHelper:
+    """ A simple builder/factory for DirectoryContentsDifferences in some simple cases. """
+
+    @staticmethod
+    def adding(contents: DirectoryContents) -> DirectoryContentsDifference:
+        """ Constructs the directory contents difference, which completelly adds specified directory contents. """
+        return DirectoryContentsDifference(
+            directories_to_add=contents.child_directories,
+            files_to_add=contents.child_files,
+            directories_to_remove=[],
+            directories_to_keep=[],
+            files_to_remove=[],
+            files_to_update=[],
+            files_to_keep=[])
+
+    @staticmethod
+    def removing(contents: DirectoryContents) -> DirectoryContentsDifference:
+        """ Constructs the directory contents difference, which removes the contents of the specified directory. """
+        return DirectoryContentsDifference(
+            directories_to_remove=contents.child_directories,
+            files_to_remove=contents.child_files,
+            directories_to_add=[],
+            directories_to_keep=[],
+            files_to_add=[],
+            files_to_update=[],
+            files_to_keep=[])
+
+    @staticmethod
+    def same(contents: DirectoryContents) -> DirectoryContentsDifference:
+        """ Constructs the directory contents difference, which has no changes. """
+        return DirectoryContentsDifference(
+            directories_to_add=[],
+            files_to_add=[],
+            directories_to_remove=[],
+            directories_to_keep=contents.child_directories,
+            files_to_remove=[],
+            files_to_update=[],
+            files_to_keep=contents.child_files)
+

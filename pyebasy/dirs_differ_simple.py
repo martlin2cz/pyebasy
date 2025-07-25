@@ -74,7 +74,7 @@ class SimpleDirectoryContentsComparer(DirectoryContentsComparer):
 
         """ Compares the two lists of either files or directories. """
 
-        all_paths = {*(source_elements_dict.keys()), *(destination_elements_dict.keys())}
+        all_paths = sorted({*(source_elements_dict.keys()), *(destination_elements_dict.keys())})
         result = ListCompareResult()
 
         for path in all_paths:
