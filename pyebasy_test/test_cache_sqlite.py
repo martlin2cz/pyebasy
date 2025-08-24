@@ -1,16 +1,18 @@
 from unittest import TestCase
 import sqlite3
 
+import testing_data
 from cache_sqlite import SqliteCache, SqliteTableHelper
-from cache_test_helpers import SomeCacheTestMixin
+from cache_test_helpers import SomeCacheTest
 
 
-class TestSqliteCache(TestCase, SomeCacheTestMixin):
+class TestSqliteCache(TestCase):
+
     def test_some_cache(self):
         cache = SqliteCache(db_path=":memory:")
-        self.populate_cache(cache)
-        self.check_has(cache)
-        self.check_get(cache)
+
+        test = SomeCacheTest(self)
+        test.run_some_test(cache)
 
 
 class TestSqliteTableHelper(TestCase):

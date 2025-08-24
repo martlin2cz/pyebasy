@@ -1,8 +1,10 @@
+import pathlib
+
 from pathlib import Path
 from unittest import TestCase
 import tempfile
 
-import some_testing_data
+import testing_data
 from datas import Directory, File
 from storage_filesystem import DefaultFileSystemStorageLister, DefaultFileSystemStorageModifier, \
     DefaultFileSystemContentsSupplier
@@ -12,7 +14,7 @@ from storage_inmemory import InMemoryFileContentsSupplier
 class TestDefaultFileSystemStorageLister(TestCase):
 
     def setUp(self):
-        self.lister = DefaultFileSystemStorageLister(some_testing_data.TOP_DIRECTORY_LOCATION)
+        self.lister = DefaultFileSystemStorageLister(testing_data.TOP_DIRECTORY_LOCATION)
 
     def test_list(self):
         # expect
@@ -40,7 +42,7 @@ class TestDefaultFileSystemStorageLister(TestCase):
 class TestDefaultFileSystemStorageModifier(TestCase):
 
     def setUp(self):
-        self.modifier = DefaultFileSystemStorageModifier(some_testing_data.TOP_DIRECTORY_LOCATION)
+        self.modifier = DefaultFileSystemStorageModifier(testing_data.TOP_DIRECTORY_LOCATION)
         self.contents_supplier = InMemoryFileContentsSupplier()
 
     def test_directories(self):
@@ -49,10 +51,10 @@ class TestDefaultFileSystemStorageModifier(TestCase):
 
             # testing directories
             foo_dir_path = tmpdir_path/"foo"
-            foo_dir = Directory(foo_dir_path, some_testing_data.NOW)
+            foo_dir = Directory(foo_dir_path, testing_data.NOW)
 
             bar_dir_path = tmpdir_path/"foo"/"bar"
-            bar_dir = Directory(bar_dir_path, some_testing_data.NOW)
+            bar_dir = Directory(bar_dir_path, testing_data.NOW)
 
             # create directories
             self.modifier.create_directory(tmpdir_path, foo_dir)
@@ -77,12 +79,12 @@ class TestDefaultFileSystemStorageModifier(TestCase):
             foo_dir_path.mkdir()
 
             lorem_file_path = tmpdir_path/"lorem.txt"
-            lorem_file = File(lorem_file_path, some_testing_data.NOW, 52, some_testing_data.NOW)
-            another_lorem_file = File(lorem_file_path, some_testing_data.NOW, 5200, some_testing_data.NOW)
+            lorem_file = File(lorem_file_path, testing_data.NOW, 52, testing_data.NOW)
+            another_lorem_file = File(lorem_file_path, testing_data.NOW, 5200, testing_data.NOW)
 
             ipsum_file_path = foo_dir_path/"ipsum.txt"
-            ipsum_file = File(ipsum_file_path, some_testing_data.NOW, 53, some_testing_data.NOW)
-            another_ipsum_file = File(ipsum_file_path, some_testing_data.NOW, 5300, some_testing_data.NOW)
+            ipsum_file = File(ipsum_file_path, testing_data.NOW, 53, testing_data.NOW)
+            another_ipsum_file = File(ipsum_file_path, testing_data.NOW, 5300, testing_data.NOW)
 
             # create files
             self.modifier.create_file(tmpdir_path, lorem_file, self.contents_supplier)
@@ -109,10 +111,10 @@ class TestDefaultFileSystemStorageModifier(TestCase):
 class TestDefaultFileSystemContentsSupplier(TestCase):
 
     def setUp(self):
-        self.contents_supplier = DefaultFileSystemContentsSupplier(some_testing_data.TOP_DIRECTORY_LOCATION)
+        self.contents_supplier = DefaultFileSystemContentsSupplier(testing_data.TOP_DIRECTORY_LOCATION)
 
     def test_get_file_contents(self):
-        file = some_testing_data.LIPSUM_FILE
+        file = testing_data.LIPSUM_FILE
         path = self.contents_supplier.get_file_contents(file)
         contents = path.read_text()
         self.assertEqual("hi\n", contents)

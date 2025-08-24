@@ -1,11 +1,13 @@
+from abc import ABC
+
 import pathlib
 from datetime import datetime, timedelta
-from typing import Callable
+from typing import Callable, List
 from unittest import TestCase
 
 from pathlib import Path
 
-from datas import Directory, File, StorageElement, TopDirectory, TOP_DIRECTORY_RELATIVE_PATH
+from datas import Directory, File, StorageElement, TopDirectory, TOP_DIRECTORY_RELATIVE_PATH, ADirectory
 
 TOP_DIRECTORY_LOCATION=pathlib.Path("testing-files")
 
@@ -68,27 +70,52 @@ ALL_ADITIONAL_ELEMENTS = [
 ]
 
 
-def foreach_element(include_root_dir: bool, include_aditionals: bool, fn: Callable[[StorageElement], None]):
-    """ Executes given function for each testing file and directory. """
+class BaseTestingData(ABC):
+    """ The superclass for the testing data producers. """
 
-    if include_root_dir:
-        fn(ROOT_DIRECTORY)
+    def foreach_element(self, fn: Callable[[StorageElement], None]) -> None:
+        """ Executes given function for each testing file and directory. """
 
-    elements = [*ALL_ELEMENTS, *ALL_ADITIONAL_ELEMENTS] if include_aditionals else [*ALL_ELEMENTS]
-    for element in elements:
-        fn(element)
+        elements = self._list_elements()
+        for element in elements:
+            fn(element)
+
+    def foreach_file_and_directory(self, directory_fn: Callable[[Directory], None], file_fn: Callable[[File], None]):
+        """ Executes given functions for each testing file and directory. """
+
+        elements = self._list_elements()
+        for element in elements:
+            if type(element) is TopDirectory:
+                directory_fn(element)
+
+            if type(element) is Directory:
+                directory_fn(element)
+
+            if type(element) is File:
+                file_fn(element)
+
+    def _list_elements(self) -> List[StorageElement]:
+        """ Actually lists the elements to be part of this dataset. """
+        pass
 
 
-def foreach_file_and_directory(include_root_dir: bool, include_aditionals: bool, directory_fn: Callable[[Directory], None], file_fn: Callable[[File], None]):
-    """ Executes given functions for each testing file and directory. """
+class SomeTestingStorageElements(BaseTestingData):
+    """ The standard testing element set. """
 
-    if include_root_dir:
-        directory_fn(ROOT_DIRECTORY)
+    def __init__(self, include_root_dir: bool, include_aditionals: bool):
+        self.include_root_dir = include_root_dir
+        self.include_aditionals = include_aditionals
 
-    elements = [*ALL_ELEMENTS, *ALL_ADITIONAL_ELEMENTS] if include_aditionals else [*ALL_ELEMENTS]
-    for element in elements:
-        if type(element) is Directory:
-            directory_fn(element)
+    def _list_elements(self) -> List[StorageElement]:
+        elements = []
 
-        if type(element) is File:
-            file_fn(element)
+        if self.include_root_dir:
+            elements.append(ROOT_DIRECTORY)
+
+        elements.extend(ALL_ELEMENTS)
+
+        if self.include_aditionals:
+            elements.extend(ALL_ADITIONAL_ELEMENTS)
+
+        return elements
+

@@ -1,13 +1,15 @@
 from unittest import TestCase
 
+import testing_data
 from cache_inmemory import InMemoryCache
-from cache_test_helpers import SomeCacheTestMixin
+from cache_test_helpers import SomeCacheTest
 
 
-class TestInMemoryCache(TestCase, SomeCacheTestMixin):
+class TestInMemoryCache(TestCase):
+
     def test_some_cache(self):
         cache = InMemoryCache()
-        self.populate_cache(cache)
-        self.check_has(cache)
-        self.check_get(cache)
+
+        test = SomeCacheTest(self)
+        test.run_some_test(cache)
 
