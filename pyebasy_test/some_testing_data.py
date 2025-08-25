@@ -1,3 +1,4 @@
+import pathlib
 from datetime import datetime, timedelta
 from typing import Callable
 from unittest import TestCase
@@ -5,6 +6,8 @@ from unittest import TestCase
 from pathlib import Path
 
 from datas import Directory, File, StorageElement, TopDirectory, TOP_DIRECTORY_RELATIVE_PATH
+
+TOP_DIRECTORY_LOCATION=pathlib.Path("testing-files")
 
 NOW = datetime.now()
 LATER_NOW = NOW + timedelta(seconds=1)

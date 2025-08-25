@@ -1,4 +1,3 @@
-import pathlib
 from pathlib import Path
 from unittest import TestCase
 import tempfile
@@ -13,20 +12,20 @@ from storage_inmemory import InMemoryFileContentsSupplier
 class TestDefaultFileSystemStorageLister(TestCase):
 
     def setUp(self):
-        self.lister = DefaultFileSystemStorageLister()
+        self.lister = DefaultFileSystemStorageLister(some_testing_data.TOP_DIRECTORY_LOCATION)
 
     def test_list(self):
         # expect
         expected_files_paths = {
-            Path("testing-files/lipsum.txt"),
+            Path("./lipsum.txt"),
         }
         expected_directories_paths = {
-            Path("testing-files/foo"),
-            Path("testing-files/qux"),
+            Path("./foo"),
+            Path("./qux"),
         }
 
         # call
-        root = Path("testing-files")
+        root = Path(".")
         contents = self.lister.list_directory(root)
 
         # post-process
@@ -41,7 +40,7 @@ class TestDefaultFileSystemStorageLister(TestCase):
 class TestDefaultFileSystemStorageModifier(TestCase):
 
     def setUp(self):
-        self.modifier = DefaultFileSystemStorageModifier()
+        self.modifier = DefaultFileSystemStorageModifier(some_testing_data.TOP_DIRECTORY_LOCATION)
         self.contents_supplier = InMemoryFileContentsSupplier()
 
     def test_directories(self):
@@ -110,7 +109,7 @@ class TestDefaultFileSystemStorageModifier(TestCase):
 class TestDefaultFileSystemContentsSupplier(TestCase):
 
     def setUp(self):
-        self.contents_supplier = DefaultFileSystemContentsSupplier(pathlib.Path("testing-files"))
+        self.contents_supplier = DefaultFileSystemContentsSupplier(some_testing_data.TOP_DIRECTORY_LOCATION)
 
     def test_get_file_contents(self):
         file = some_testing_data.LIPSUM_FILE
