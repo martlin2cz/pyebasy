@@ -12,10 +12,8 @@ from storage_inmemory import InMemoryStorageLister, InMemoryStore
 class TestPrimitiveCacheUpdater(TestCase):
     def test_update(self):
         lister_store = InMemoryStore()
-        lister_store.add(TopDirectory(pathlib.Path("."))) #FIXME even more tmp
-        lister_store.add(Directory(some_testing_data.ROOT_DIRECTORY_PATH, some_testing_data.NOW)) #FIXME tmp
 
-        some_testing_data.foreach_element(False, False,
+        some_testing_data.foreach_element(True, False,
               lambda e: lister_store.add(e)
         )
 
@@ -25,10 +23,10 @@ class TestPrimitiveCacheUpdater(TestCase):
         updater = PrimitiveCacheUpdater()
         updater.update(storage_lister, cache)
 
-        some_testing_data.foreach_element(False, False,
+        some_testing_data.foreach_element(True, False,
               lambda e: self.assertTrue(cache.has(e.path), f"Cache doesn't have {e.path}")
         )
-        some_testing_data.foreach_element(False, False,
+        some_testing_data.foreach_element(True, False,
               lambda e: self.assertEqual(e, cache.get(e.path), f"Cache doesn't have {e.path}")
         )
 

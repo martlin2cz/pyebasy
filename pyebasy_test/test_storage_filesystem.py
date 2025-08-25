@@ -110,7 +110,7 @@ class TestDefaultFileSystemStorageModifier(TestCase):
 class TestDefaultFileSystemContentsSupplier(TestCase):
 
     def setUp(self):
-        self.contents_supplier = DefaultFileSystemContentsSupplier(pathlib.Path("."))
+        self.contents_supplier = DefaultFileSystemContentsSupplier(pathlib.Path("testing-files"))
 
     def test_get_file_contents(self):
         file = some_testing_data.LIPSUM_FILE

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Union
 
-from datas import File, Directory, StorageElement, DirectoryContentsDifference
+from datas import File, Directory, StorageElement, DirectoryContentsDifference, CommonStorageElement, ADirectory
 
 
 ########################################################################################################################
@@ -15,7 +15,7 @@ class DirectoryContents:
     child_files: List[File]
     child_directories: List[Directory]
 
-    def get(self, name: str) -> StorageElement:
+    def get(self, name: str) -> CommonStorageElement:
         the_files = [f for f in self.child_files if f.path.name == name]
         the_directories = [d for d in self.child_directories if d.path.name == name]
 
@@ -100,7 +100,7 @@ class Cache(ABC):
         """ Stores the specified file into the cache. """
         pass
 
-    def store_directory(self, directory: Directory):
+    def store_directory(self, directory: ADirectory):
         """ Stores the specified directory into the cache. """
         pass
 

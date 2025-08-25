@@ -1,7 +1,7 @@
 from typing import Union
 
 from commons_base import DirectoryContents, Storage, StorageLister, StorageModifier, FileContentsSupplier
-from datas import Directory, File, StorageElement
+from datas import Directory, File, StorageElement, CommonStorageElement
 
 
 ########################################################################################################################
@@ -46,7 +46,7 @@ class DirectoryContentsBuilder:
         """ Adds a directory to the builder. """
         self.directories.append(directory)
 
-    def add(self, file_or_directory: StorageElement):
+    def add(self, file_or_directory: CommonStorageElement):
         """ Adds the specified file or directory to the builder. """
         if isinstance(file_or_directory, File):
             self.add_file(file_or_directory)

@@ -4,7 +4,7 @@ import sqlite3
 from datetime import datetime
 
 from commons_base import Cache
-from datas import File, Directory, StorageElement, TopDirectory
+from datas import File, Directory, StorageElement, TopDirectory, ADirectory
 
 
 ########################################################################################################################
@@ -128,16 +128,25 @@ class SqliteCache(Cache):
             "date_of_last_modification": file.date_of_last_modification.isoformat()
         })
 
-    def store_directory(self, directory: Directory):
-        parent_path = self._path_to_str(directory.path.parent) \
-            if not isinstance(directory, TopDirectory) \
-            else None
+    def store_directory(self, directory: ADirectory):
 
-        self.directories.insert_into({
-            "path": self._path_to_str(directory.path),
-            "parent_path": parent_path,
-            "date_of_creation": directory.date_of_creation.isoformat()
-        })
+        path = self._path_to_str(directory.path)
+
+        if isinstance(directory, Directory):
+            parent_path = self._path_to_str(directory.path.parent)
+            date_of_creation = directory.date_of_creation.isoformat()
+
+            self.directories.insert_into({
+                "path": path,
+                "parent_path": parent_path,
+                "date_of_creation": date_of_creation
+            })
+        else:
+            self.directories.insert_into({
+                "path": path,
+                "parent_path": None,
+                "date_of_creation": None
+            })
 
     def has(self, path: Path) -> bool:
         file = self.get_file(path)
@@ -181,7 +190,7 @@ class SqliteCache(Cache):
                 date_of_creation = datetime.fromisoformat(row["date_of_creation"])
                 return Directory(path=path, date_of_creation=date_of_creation)
             else:
-                return TopDirectory(path=path)
+                return TopDirectory()
 
     def _path_to_str(self, path: Path):
         if str(path) != ".":

@@ -1,5 +1,3 @@
-import pathlib
-
 from pathlib import Path
 
 from commons_base import CacheUpdater, StorageLister, Cache
@@ -11,10 +9,10 @@ class PrimitiveCacheUpdater(CacheUpdater):
 
     def update(self, storage_lister: StorageLister, cache: Cache):
 
-        path = pathlib.Path(".")  #TODO remove
-        top_directory = TopDirectory(path)
+        top_directory = TopDirectory()
         cache.store_directory(top_directory)
 
+        path = Path(".")
         self._do_update(storage_lister, cache, path)
 
     def _do_update(self, storage_lister: StorageLister, cache: Cache, path: Path):

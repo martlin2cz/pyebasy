@@ -8,7 +8,7 @@ from pathlib import Path
 
 from commons_base import DirectoryContents, StorageLister, StorageModifier, FileContentsSupplier
 from commons_helpers import CommonStorage, DirectoryContentsBuilder
-from datas import Directory, File, StorageElement, TopDirectory
+from datas import Directory, File, StorageElement, TopDirectory, ADirectory
 
 
 class InMemoryStore:
@@ -17,14 +17,20 @@ class InMemoryStore:
     def __init__(self):
         self.resources = {}
 
-    def _verify_path(self, path):
-        """ Makes sure the specified path points to an existing directory """
+    def _ensure_existing(self, path: pathlib.Path, directory_required: bool) -> None:
+        """ Makes sure the specified path points to an existing element """
         if path not in self.resources:
-            raise KeyError(f"No such directory {path} in {self.resources.keys()}")
+            raise KeyError(f"No such element {path} in {self.resources.keys()}")
 
-        directory = self.resources[path]
-        if not isinstance(directory, Directory):
-            raise KeyError(f"The {path} is not directory, but {directory}")
+        if directory_required:
+            element = self.resources[path]
+            if not isinstance(element, ADirectory):
+                raise KeyError(f"The element {path} is not directory, but {type(element)} in {self.resources.keys()}")
+
+    def _ensure_nonexisting(self, path: pathlib.Path) -> None:
+        """ Makes sure the specified path doesn't exist here """
+        if path in self.resources:
+            raise KeyError(f"Element {path} already exists in {self.resources.keys()}")
 
     def get_element(self, path: Path) -> StorageElement:
         """ Returns the file/directory with the given path """
@@ -33,7 +39,7 @@ class InMemoryStore:
     def get_children(self, path: Path) -> DirectoryContents:
         """ Returns the contents of the specified directory path. """
 
-        self._verify_path(path)
+        self._ensure_existing(path, True)
 
         children = [e for p, e in self.resources.items() if p.parent == path]
         child_directories = [e for e in children if isinstance(e, Directory) and e.path != path] #FIXME: for the parent = "." case
@@ -44,19 +50,30 @@ class InMemoryStore:
     def add(self, file_or_directory: StorageElement):
         """ Adds new file or directory. """
 
+        if len(self.resources) == 0 and not isinstance(file_or_directory, TopDirectory):
+            raise ValueError("The store is empty, start by adding the TopDirectory first")
+
         path = file_or_directory.path
-        if len(self.resources) > 0:  # we allways allow to add when empty
+        self._ensure_nonexisting(path)
+
+        if not isinstance(file_or_directory, TopDirectory):
             parent_path = path.parent
-            self._verify_path(parent_path)
+            self._ensure_existing(parent_path, True)
 
         self.resources[path] = file_or_directory
 
     def remove(self, file_or_directory: StorageElement):
         """ Removes the existing file or directory. """
 
+        if len(self.resources) > 0 and isinstance(file_or_directory, TopDirectory):
+            raise ValueError("The store is NOT empty, you cannot remove its TopDirectory")
+
         path = file_or_directory.path
-        parent_path = path.parent
-        self._verify_path(parent_path)
+        self._ensure_existing(path, False)
+
+        if not isinstance(file_or_directory, TopDirectory):
+            parent_path = path.parent
+            self._ensure_existing(parent_path, True)
 
         del self.resources[path]
 

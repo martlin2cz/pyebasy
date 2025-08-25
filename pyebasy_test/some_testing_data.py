@@ -4,15 +4,15 @@ from unittest import TestCase
 
 from pathlib import Path
 
-from datas import Directory, File, StorageElement, TopDirectory
+from datas import Directory, File, StorageElement, TopDirectory, TOP_DIRECTORY_RELATIVE_PATH
 
 NOW = datetime.now()
 LATER_NOW = NOW + timedelta(seconds=1)
 
-ROOT_DIRECTORY_PATH = Path("testing-files")
+ROOT_DIRECTORY_PATH = TOP_DIRECTORY_RELATIVE_PATH
 
 # Directories
-ROOT_DIRECTORY = TopDirectory(ROOT_DIRECTORY_PATH)
+ROOT_DIRECTORY = TopDirectory()
 FOO_DIRECTORY = Directory(ROOT_DIRECTORY_PATH/"foo", NOW)
 BAR_DIRECTORY = Directory(ROOT_DIRECTORY_PATH/"foo"/"bar", NOW)
 BAZ_DIRECTORY = Directory(ROOT_DIRECTORY_PATH/"foo"/"bar"/"baz", NOW)

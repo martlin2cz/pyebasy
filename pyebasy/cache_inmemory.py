@@ -3,7 +3,7 @@ from typing import Union
 from pathlib import Path
 
 from commons_base import Cache
-from datas import File, Directory, StorageElement
+from datas import File, Directory, StorageElement, ADirectory
 
 
 class InMemoryCache(Cache):
@@ -16,7 +16,7 @@ class InMemoryCache(Cache):
     def store_file(self, file: File):
         self.files[file.path] = file
 
-    def store_directory(self, directory: Directory):
+    def store_directory(self, directory: ADirectory):
         self.directories[directory.path] = directory
 
     def has(self, path: Path) -> bool:
