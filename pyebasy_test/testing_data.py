@@ -119,3 +119,39 @@ class SomeTestingStorageElements(BaseTestingData):
 
         return elements
 
+class SomeWithModifications(BaseTestingData):
+    """ The standard testing set with possible simple modifications (added/removed/modified) some of the standard elements. """
+
+    def __init__(self, include_root_dir: bool, add_directory: bool, add_file: bool, remove_directory: bool, remove_file: bool, modify_file: bool):
+        self.include_root_dir = include_root_dir
+        self.add_directory = add_directory
+        self.add_file = add_file
+        self.remove_directory = remove_directory
+        self.remove_file = remove_file
+        self.modify_file = modify_file
+
+    def _list_elements(self) -> List[StorageElement]:
+        elements = []
+
+        if self.include_root_dir:
+            elements.append(ROOT_DIRECTORY)
+
+        elements.extend(ALL_ELEMENTS)
+
+        if self.add_directory:
+            elements.append(QUICK_DIRECTORY)
+
+        if self.add_file:
+            elements.append(BROWN_FILE)
+
+        if self.remove_directory:
+            elements.remove(BAZ_DIRECTORY)
+
+        if self.remove_file:
+            elements.remove(IPSUM_FILE)
+
+        if self.modify_file:
+            elements = [e if e is not DOLOR_FILE else MODIFIED_DOLOR_FILE for e in elements]
+
+        return elements
+
