@@ -5,7 +5,7 @@ import testing_data
 from caches_diff_performer_impl import DefaultCachesDifferencePerformer
 from commons_base import DirectoryContents
 from commons_helpers import DirectoryContentsDifferencesHelper
-from datas import CachesDifference, DirectoryContentsDifference
+from datas import CachesDifference, DirectoryContentsDifference, TopDirectory
 from directory_contents_diff_performer_impls import DefaultContentsDifferencePerformer
 from storage_inmemory import InMemoryStorageModifier, InMemoryFileContentsSupplier, InMemoryStore
 
@@ -67,6 +67,87 @@ class TestDefaultCachesDifferencePerformer(TestCase):
         self._do_apply_diff(caches_difference, store)
 
         test_data.foreach_element(lambda e: self.assertEqual(e, store.get_element(e.path)))
+
+    def test_apply_adding_diff_to_empty_store(self):
+        root_diff = DirectoryContentsDifferencesHelper.adding(
+            DirectoryContents([testing_data.LIPSUM_FILE], [testing_data.FOO_DIRECTORY, testing_data.QUX_DIRECTORY]))
+
+        foo_diff = DirectoryContentsDifferencesHelper.adding(
+            DirectoryContents([], [testing_data.BAR_DIRECTORY]))
+
+        bar_diff = DirectoryContentsDifferencesHelper.adding(
+            DirectoryContents([], [testing_data.AUX_DIRECTORY, testing_data.BAZ_DIRECTORY]))
+
+        baz_diff = DirectoryContentsDifferencesHelper.adding(
+            DirectoryContents([testing_data.LOREM_FILE], []))
+
+        aux_diff = DirectoryContentsDifferencesHelper.adding(
+            DirectoryContents([testing_data.DOLOR_FILE, testing_data.IPSUM_FILE], []))
+
+        qux_diff = DirectoryContentsDifferencesHelper.adding(
+            DirectoryContents([], [testing_data.QUUX_DIRECTORY]))
+
+        quux_diff = DirectoryContentsDifferencesHelper.adding(
+            DirectoryContents([testing_data.SIT_FILE], []))
+
+        caches_difference = CachesDifference({
+            testing_data.ROOT_DIRECTORY_PATH: root_diff,
+            testing_data.FOO_DIRECTORY.path: foo_diff,
+            testing_data.BAR_DIRECTORY.path: bar_diff,
+            testing_data.BAZ_DIRECTORY.path: baz_diff,
+            testing_data.AUX_DIRECTORY.path: aux_diff,
+            testing_data.QUX_DIRECTORY.path: qux_diff,
+            testing_data.QUUX_DIRECTORY.path: quux_diff
+        })
+
+        store = InMemoryStore()
+        store.add(TopDirectory())
+        self._do_apply_diff(caches_difference, store)
+
+        test_data = testing_data.SomeTestingStorageElements(True, False)
+        test_data.foreach_element(lambda e: self.assertEqual(e, store.get_element(e.path)))
+
+
+    def test_apply_removing_diff_to_full_store(self):
+        root_diff = DirectoryContentsDifferencesHelper.removing(
+            DirectoryContents([testing_data.LIPSUM_FILE], [testing_data.FOO_DIRECTORY, testing_data.QUX_DIRECTORY]))
+
+        foo_diff = DirectoryContentsDifferencesHelper.removing(
+            DirectoryContents([], [testing_data.BAR_DIRECTORY]))
+
+        bar_diff = DirectoryContentsDifferencesHelper.removing(
+            DirectoryContents([], [testing_data.AUX_DIRECTORY, testing_data.BAZ_DIRECTORY]))
+
+        baz_diff = DirectoryContentsDifferencesHelper.removing(
+            DirectoryContents([testing_data.LOREM_FILE], []))
+
+        aux_diff = DirectoryContentsDifferencesHelper.removing(
+            DirectoryContents([testing_data.DOLOR_FILE, testing_data.IPSUM_FILE], []))
+
+        qux_diff = DirectoryContentsDifferencesHelper.removing(
+            DirectoryContents([], [testing_data.QUUX_DIRECTORY]))
+
+        quux_diff = DirectoryContentsDifferencesHelper.removing(
+            DirectoryContents([testing_data.SIT_FILE], []))
+
+        caches_difference = CachesDifference({
+            testing_data.ROOT_DIRECTORY_PATH: root_diff,
+            testing_data.FOO_DIRECTORY.path: foo_diff,
+            testing_data.BAR_DIRECTORY.path: bar_diff,
+            testing_data.BAZ_DIRECTORY.path: baz_diff,
+            testing_data.AUX_DIRECTORY.path: aux_diff,
+            testing_data.QUX_DIRECTORY.path: qux_diff,
+            testing_data.QUUX_DIRECTORY.path: quux_diff
+        })
+
+        store = InMemoryStore()
+        test_data = testing_data.SomeTestingStorageElements(True, False)
+        test_data.foreach_element(lambda e: store.add(e))
+
+        self._do_apply_diff(caches_difference, store)
+
+        self.assertEqual(DirectoryContents([], []), store.get_children(testing_data.ROOT_DIRECTORY_PATH))
+
 
     def test_apply_modifications_diff_to_full(self):
         root_diff = DirectoryContentsDifference(
