@@ -155,3 +155,11 @@ class DirectoryContentsDifferencePerformer(ABC):
     def execute(self, directory_path: Path, diff: DirectoryContentsDifference, contents_supplier: FileContentsSupplier, storage_modifier: StorageModifier):
         """ Executes the directory contents difference in the specified storage. """
         pass
+
+
+class CachesDifferencePerformer(ABC):
+    """ The tool which applies the caches difference to a particular storage. """
+
+    def apply(self, diff: CachesDifference, contents_supplier: FileContentsSupplier, storage_modifier: StorageModifier):
+        """ Applies the difference to the specified storage. """
+        pass

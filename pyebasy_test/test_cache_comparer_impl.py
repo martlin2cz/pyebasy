@@ -247,10 +247,10 @@ class TestDefaultCacheComparer(TestCase):
         actual_diff = self.comparer.compute(source, destination)
         expected_diff = CachesDifference(expected_diff_dict)
 
-        self.assertEqual(expected_diff.directories_changes.keys(), actual_diff.directories_changes.keys(), "Paths processed mismatch: ")
+        self.assertEqual(expected_diff.paths(), actual_diff.paths(), "Paths processed mismatch: ")
 
-        for p in expected_diff.directories_changes.keys():
-            self.assertEqual(expected_diff.directories_changes[p], actual_diff.directories_changes[p], f"For path {p}:")
+        for p in expected_diff.paths():
+            self.assertEqual(expected_diff.change_of_directory(p), actual_diff.change_of_directory(p), f"For path {p}:")
 
         self.assertEqual(expected_diff, actual_diff)
 

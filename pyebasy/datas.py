@@ -116,6 +116,12 @@ class CachesDifference:
 
     directories_changes: Dict[pathlib.Path, DirectoryContentsDifference]
 
+    def paths(self) -> List[Path]:
+        return sorted(self.directories_changes.keys())
+
+    def change_of_directory(self, path: Path) -> DirectoryContentsDifference:
+        return self.directories_changes[path]
+
     def __str__(self):
         return (f"CachesDifference: "
                 f"directories: {len(self.directories_changes)}, "
