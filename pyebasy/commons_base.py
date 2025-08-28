@@ -163,3 +163,20 @@ class CachesDifferencePerformer(ABC):
     def apply(self, diff: CachesDifference, contents_supplier: FileContentsSupplier, storage_modifier: StorageModifier):
         """ Applies the difference to the specified storage. """
         pass
+
+########################################################################################################################
+
+class CachesSynchronizer(ABC):
+    """ The synchronizer of the caches (actually, executor of changes between them in the destination storage). """
+
+    def execute(self, source_cache: Cache,  destination_cache: Cache, contents_supplier: FileContentsSupplier, storage_modifier: StorageModifier):
+        """ Computes the difference between theese two caches and executes them. """
+        pass
+
+
+class Synchronizer(ABC):
+    """ The actual sychronizer. """
+
+    def synchronize(self, source: Storage, destination: Storage):
+        """ Synchronizes the source storage with the destionation. """
+        pass

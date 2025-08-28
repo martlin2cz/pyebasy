@@ -99,6 +99,19 @@ class BaseTestingData(ABC):
         pass
 
 
+
+class EmptyTestingStorageElements(BaseTestingData):
+    """ The empty testing data set (optinally only the root directory). """
+
+    def __init__(self, at_least_root: bool):
+        self.at_least_root = at_least_root
+
+    def _list_elements(self) -> List[StorageElement]:
+        if self.at_least_root:
+            return [ROOT_DIRECTORY]
+        else:
+            return []
+
 class SomeTestingStorageElements(BaseTestingData):
     """ The standard testing element set. """
 
