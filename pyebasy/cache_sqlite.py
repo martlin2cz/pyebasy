@@ -126,6 +126,12 @@ class SqliteCache(Cache):
             "date_of_creation": "TEXT"
         })
 
+    @staticmethod
+    def drop_existing(db_path: Path):
+        if db_path.exists():
+            loggr.log_detailed(f"Dropping already existing cache file {db_path}")
+            db_path.unlink()
+
     def store_file(self, file: File):
         loggr.log_detailed(f"Storing file {file.path} into the cache")
 

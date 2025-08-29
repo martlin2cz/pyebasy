@@ -63,13 +63,24 @@ class DefaultSynchronizer(Synchronizer):
         caches_updater = PrimitiveCacheUpdater()
 
         if self.update_source_cache:
+            loggr.log_overall("Updating the source cache ...")
             source_lister = source.lister()
             caches_updater.update(source_lister, self.source_cache)
+            loggr.log_overall("Updated the source cache!")
+        else:
+            loggr.log_overall("Source cache update skipped")
 
         if self.update_destination_cache:
+            loggr.log_overall("Updating the destination cache ...")
             destination_lister = destination.lister()
             caches_updater.update(destination_lister, self.destination_cache)
+            loggr.log_overall("Updated the destination cache!")
+        else:
+            loggr.log_overall("Destination cache update skipped")
 
         source_contents_supplier = source.contents_supplier()
         destination_modifier = destination.modifier()
+
+        loggr.log_overall("Synchronizing the cached storage ...")
         self.caches_synchronizer.execute(self.source_cache, self.destination_cache, source_contents_supplier, destination_modifier)
+        loggr.log_overall("Synchronized the cached storage!")

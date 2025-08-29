@@ -4,7 +4,17 @@ from typing import Literal, Tuple
 
 ########################################################################################################################
 # verbocities (abstract concept over the logging levels)
-VERBOCITIES = ['tracing', 'debug', 'normal', 'quiet']
+# quiet (no infos, only errors)
+QUIET_VERBOCITY = 'quiet'
+# normal (only overal messages are printed, logs also detailed)
+NORMAL_VERBOCITY = 'normal'
+# verbose (informative messages are printed, technical logged)
+VERBOSE_VERBOCITY = 'verbose'
+# tracing (detailed messages are printed, technical logged)
+TRACING_VERBOCITY = 'tracing'
+
+# the list of all the verbocities
+VERBOCITIES = [TRACING_VERBOCITY, VERBOSE_VERBOCITY, NORMAL_VERBOCITY, QUIET_VERBOCITY]
 
 # technical log level: the uneccesairly detailed informations (low-level details, possibly raw data from the external sources)
 LVL_NAME_TECHINICAL = 'TECHNICAL'
@@ -34,18 +44,18 @@ DEFAULT_LOG_LVL_NAME = LVL_NAME_OVERALL
 
 # Mapping of logging level for each verbocity for the CONSOLE handler
 CONSOLE_LEVELS = {
-    'tracing': LVL_NAME_DETAILED,
-    'debug': LVL_NAME_INFORMATIVE,
-    'normal': LVL_NAME_OVERALL,
-    'quiet': LVL_NAME_WARNING,
+    TRACING_VERBOCITY: LVL_NAME_DETAILED,
+    VERBOSE_VERBOCITY: LVL_NAME_INFORMATIVE,
+    NORMAL_VERBOCITY: LVL_NAME_OVERALL,
+    QUIET_VERBOCITY: LVL_NAME_WARNING,
 }
 
 # Mapping of lLogging level for each verbocity for the FILE handler
 FILE_LEVELS = {
-    'tracing': LVL_NAME_TECHINICAL,
-    'debug': LVL_NAME_TECHINICAL,
-    'normal': LVL_NAME_DETAILED,
-    'quiet': LVL_NAME_OVERALL,
+    TRACING_VERBOCITY: LVL_NAME_TECHINICAL,
+    VERBOSE_VERBOCITY: LVL_NAME_TECHINICAL,
+    NORMAL_VERBOCITY: LVL_NAME_DETAILED,
+    QUIET_VERBOCITY: LVL_NAME_OVERALL,
 }
 
 # logfile path
