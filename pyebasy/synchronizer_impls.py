@@ -1,5 +1,6 @@
 import pathlib
 
+import loggr
 from cache_comparer_impl import DefaultCacheComparer
 from cache_updater_impls import PrimitiveCacheUpdater
 from caches_diff_performer_impl import DefaultCachesDifferencePerformer
@@ -7,6 +8,7 @@ from commons_base import Synchronizer, Storage, Cache, CacheComparer, FileConten
     StorageModifier, CachesSynchronizer, CachesDifferencePerformer
 from directory_contents_diff_performer_impls import DefaultContentsDifferencePerformer
 from dirs_differ_simple import SimpleDirectoryContentsComparer
+
 
 class CommonCachesSynchronizer(CachesSynchronizer):
     """ The common caches synchronizer. """
@@ -16,8 +18,13 @@ class CommonCachesSynchronizer(CachesSynchronizer):
         self.caches_diff_performer = caches_diff_performer
 
     def execute(self, source_cache: Cache,  destination_cache: Cache, source_contents_supplier: FileContentsSupplier, destination_modifier: StorageModifier):
+        loggr.log_overall("Comparing the caches ...")
         caches_diff = self.caches_comparer.compute(source_cache, destination_cache)
+        loggr.log_overall("Compared!")
+
+        loggr.log_overall("Applying the changes ...")
         self.caches_diff_performer.apply(caches_diff, source_contents_supplier, destination_modifier)
+        loggr.log_overall("Applied!")
 
 
 class DefaultCachesSynchronizer(CommonCachesSynchronizer):

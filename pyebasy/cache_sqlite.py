@@ -3,6 +3,7 @@ from typing import Dict, List, Tuple
 import sqlite3
 from datetime import datetime
 
+import loggr
 from commons_base import Cache, DirectoryContents
 from datas import File, Directory, StorageElement, TopDirectory, ADirectory
 
@@ -31,6 +32,7 @@ class SqliteTableHelper:
             table_def_strs = [f"{col_name} {col_declaration}" for col_name, col_declaration in table_def.items()]
             table_def_str = f"({', '.join(table_def_strs)})"
             sql = f"CREATE TABLE IF NOT EXISTS  {self.table_name} {table_def_str}"
+            loggr.log_technical(f"Executing create table SQL: {sql}")
             self.conn.execute(sql)
 
     def insert_into(self, data: Dict[str, str]):
@@ -44,6 +46,7 @@ class SqliteTableHelper:
             values_placeholders_str = f"({', '.join(values_placeholders)})"
 
             sql = f"INSERT INTO {self.table_name} {columns_names_str} VALUES {values_placeholders_str}"
+            loggr.log_technical(f"Executing insert SQL: {sql}")
             self.conn.execute(sql, values)
 
     def update_in(self, new_data: Dict[str, any], where_statement: str, where_values: List[any]):
@@ -58,6 +61,7 @@ class SqliteTableHelper:
 
             sql = f"UPDATE {self.table_name} SET {columns_assignments_str} WHERE {where_statement}"
             sql_values = [*values, *where_values]
+            loggr.log_technical(f"Executing update SQL: {sql}")
             self.conn.execute(sql, sql_values)
 
     def select_from(self, where_statement: str = None, where_values: List[any] = None) -> List[Dict[str, any]]:
@@ -84,10 +88,12 @@ class SqliteTableHelper:
 
         if where_statement is None:
             sql = f"SELECT {columns_str} FROM {self.table_name}"
+            loggr.log_technical(f"Executing select one SQL: {sql}")
             return self.conn.execute(sql)
         else:
             args = where_values if where_values is not None else []
             sql = f"SELECT {columns_str} FROM {self.table_name} WHERE {where_statement}"
+            loggr.log_technical(f"Executing e more: {sql}")
             return self.conn.execute(sql, args)
 
     def _tuple_to_dict(self, values: Tuple[any]):
@@ -103,6 +109,8 @@ class SqliteCache(Cache):
     """ The cache which keeps the files and directories in a sqlite database file. """
 
     def __init__(self, db_path: Path = Path("cache.db")):
+        loggr.log_detailed(f"Preparing SQLite cache in file {db_path}")
+
         self.conn = sqlite3.connect(db_path)
         self.files = SqliteTableHelper(self.conn, "files", {
             "path": "TEXT PRIMARY KEY",
@@ -119,6 +127,7 @@ class SqliteCache(Cache):
         })
 
     def store_file(self, file: File):
+        loggr.log_detailed(f"Storing file {file.path} into the cache")
 
         self.files.insert_into({
             "path": self._path_to_str(file.path),
@@ -129,6 +138,7 @@ class SqliteCache(Cache):
         })
 
     def store_directory(self, directory: ADirectory):
+        loggr.log_detailed(f"Storing directory {directory.path} into the cache")
 
         path = self._path_to_str(directory.path)
 

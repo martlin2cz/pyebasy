@@ -6,6 +6,7 @@ import datacompy
 import pandas as pd
 import pathlib
 
+import loggr
 from commons_base import DirectoryContentsComparer, DirectoryContents
 from datas import DirectoryContentsDifference, StorageElement, File, Directory
 
@@ -55,6 +56,8 @@ class SimpleDirectoryContentsComparer(DirectoryContentsComparer):
     def compute(self, source_contents: DirectoryContents, destination_contents: DirectoryContents) \
             -> DirectoryContentsDifference:
 
+        loggr.log_informative("Comparing directory contents ...")
+
         source_files_dict = {f.path: f for f in source_contents.child_files}
         source_directories_dict = {d.path: d for d in source_contents.child_directories}
         destination_files_dict = {f.path: f for f in destination_contents.child_files}
@@ -63,9 +66,12 @@ class SimpleDirectoryContentsComparer(DirectoryContentsComparer):
         files_diff = self._do_compare(source_files_dict, destination_files_dict, files_are_same)
         directories_diff = self._do_compare(source_directories_dict, destination_directories_dict, directories_are_same)
 
-        return self._to_report(source_files_dict, destination_files_dict,
+        report = self._to_report(source_files_dict, destination_files_dict,
                                source_directories_dict, destination_directories_dict,
                                files_diff, directories_diff)
+
+        loggr.log_informative("Compared directory contents!")
+        return report
 
     @staticmethod
     def _do_compare(source_elements_dict: Dict[pathlib.Path, SET],
@@ -78,6 +84,8 @@ class SimpleDirectoryContentsComparer(DirectoryContentsComparer):
         result = ListCompareResult()
 
         for path in all_paths:
+            loggr.log_technical(f"Comparing resources with path {path}")
+
             in_source = path in source_elements_dict
             in_destination = path in destination_elements_dict
 

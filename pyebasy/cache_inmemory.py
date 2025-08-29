@@ -2,10 +2,10 @@ from typing import Union
 
 from pathlib import Path
 
+import loggr
 from commons_base import Cache
 from commons_base import Cache, DirectoryContents
 from datas import File, Directory, StorageElement, ADirectory, TopDirectory
-
 
 
 class InMemoryCache(Cache):
@@ -16,9 +16,11 @@ class InMemoryCache(Cache):
         self.directories = {}
 
     def store_file(self, file: File):
+        loggr.log_detailed(f"Storing file {file.path} into cache")
         self.files[file.path] = file
 
     def store_directory(self, directory: ADirectory):
+        loggr.log_detailed(f"Storing directory {directory.path} into cache")
         self.directories[directory.path] = directory
 
     def has(self, path: Path) -> bool:

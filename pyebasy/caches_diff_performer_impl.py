@@ -3,6 +3,7 @@ from typing import Callable, Tuple
 import pathlib
 import functools
 
+import loggr
 from commons_base import CachesDifferencePerformer, StorageModifier, FileContentsSupplier, \
     DirectoryContentsDifferencePerformer
 from datas import CachesDifference
@@ -22,12 +23,16 @@ class DefaultCachesDifferencePerformer(CommonCachesDifferencePerformer):
         super().__init__(directory_diff_performer)
 
     def apply(self, diff: CachesDifference, contents_supplier: FileContentsSupplier, storage_modifier: StorageModifier):
+        loggr.log_informative(f"Performing the {len(diff)} changes in the cache ...")
         paths_sorted = sorted(diff.paths(), key=lambda p: self.compute_sort_key(diff, p))
 
         for path in paths_sorted:
+            loggr.log_detailed(f"Performing the changes of the directory {path}")
             dir_diff = diff.change_of_directory(path)
 
             self.directory_diff_performer.execute(path, dir_diff, contents_supplier, storage_modifier)
+
+        loggr.log_informative("Performed the changes in the cache!")
 
     #TODO: the key sorting should get extracted into standalone component
     def compute_sort_key(self, diff: CachesDifference, path) -> Tuple[int, pathlib.Path, str]:

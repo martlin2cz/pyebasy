@@ -90,10 +90,14 @@ class DirectoryContentsDifference:
         """ Returns all the files involved. """
         return sorted({*self.files_to_add, *self.files_to_remove, *self.files_to_update, *self.files_to_keep})
 
+    def changes(self):
+        """ Returns all the changed files and directories. """
+        return [*self.directories_to_add, *self.directories_to_remove,
+                *self.files_to_add, *self.files_to_remove, *self.files_to_update]
+
     def has_some_changes(self) -> bool:
         """ Returns true, if contains some changes."""
-        return len([*self.directories_to_add, *self.directories_to_remove,
-                    *self.files_to_add, *self.files_to_remove, *self.files_to_update]) > 0
+        return len(self.changes()) > 0
 
     def __str__(self):
         return (f"DirectoryContentsDifference: "
@@ -110,6 +114,7 @@ class DirectoryContentsDifference:
                 ")")
 
 
+
 @dataclass(frozen=True)
 class CachesDifference:
     """ The different of two caches. Contains the directory differences for each directory. """
@@ -121,6 +126,9 @@ class CachesDifference:
 
     def change_of_directory(self, path: Path) -> DirectoryContentsDifference:
         return self.directories_changes[path]
+
+    def __len__(self):
+        return len(self.directories_changes.keys())
 
     def __str__(self):
         return (f"CachesDifference: "

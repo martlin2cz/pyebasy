@@ -5,6 +5,7 @@ import shutil
 import pathlib
 from pathlib import Path
 
+import loggr
 from commons_base import Storage, StorageLister, DirectoryContents, StorageModifier, FileContentsSupplier
 from commons_helpers import CommonStorage, DirectoryContentsBuilder
 from datas import File, Directory, StorageElement
@@ -17,6 +18,8 @@ class DefaultFileSystemStorageLister(StorageLister):
         self.top_directory_location = top_directory_location
 
     def list_directory(self, path: Path) -> DirectoryContents:
+        loggr.log_technical(f"Listing directory contents of {path}")
+
         result = DirectoryContentsBuilder()
 
         full_path = self.top_directory_location / path
@@ -59,21 +62,31 @@ class DefaultFileSystemStorageModifier(StorageModifier):
         self.top_directory_location = top_directory_location
 
     def create_directory(self, owner_directory_path: Path, directory: Directory):
+        loggr.log_technical(f"Creating directory {directory.path}")
+
         resolved_path = self._resolved_path_of(directory)
         os.mkdir(resolved_path)
 
     def remove_directory(self, owner_directory_path: Path, directory: Directory):
+        loggr.log_technical(f"Removing directory {directory.path}")
+
         resolved_path = self._resolved_path_of(directory)
         os.rmdir(resolved_path)
 
     def create_file(self, owner_directory_path: Path, file: File, contents_supplier: FileContentsSupplier):
+        loggr.log_technical(f"Creating file {file.path}")
+
         self._do_write_file(file, contents_supplier)
 
     def remove_file(self, owner_directory_path: Path, file: File):
+        loggr.log_technical(f"Removing file {file.path}")
+
         resolved_path = self._resolved_path_of(file)
         os.remove(resolved_path)
 
     def update_file(self, owner_directory_path: Path, file: File, contents_supplier: FileContentsSupplier):
+        loggr.log_technical(f"Updating file {file.path}")
+
         self._do_write_file(file, contents_supplier)
 
     def _do_write_file(self, file: File, contents_supplier: FileContentsSupplier):
@@ -88,6 +101,7 @@ class DefaultFileSystemStorageModifier(StorageModifier):
     def _resolved_path_of(self, element: StorageElement) -> pathlib.Path:
         path = element.path
         return self.top_directory_location / path
+
 
 class DefaultFileSystemContentsSupplier(FileContentsSupplier):
     """ The default file system file contents supplier. """

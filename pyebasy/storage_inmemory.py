@@ -6,6 +6,7 @@ import tempfile
 import pathlib
 from pathlib import Path
 
+import loggr
 from commons_base import DirectoryContents, StorageLister, StorageModifier, FileContentsSupplier
 from commons_helpers import CommonStorage, DirectoryContentsBuilder
 from datas import Directory, File, StorageElement, TopDirectory, ADirectory
@@ -34,10 +35,13 @@ class InMemoryStore:
 
     def get_element(self, path: Path) -> StorageElement:
         """ Returns the file/directory with the given path """
+        loggr.log_technical(f"Looks for the {path} in the store")
+
         return self.resources[path]
 
     def get_children(self, path: Path) -> DirectoryContents:
         """ Returns the contents of the specified directory path. """
+        loggr.log_technical(f"Gets children of {path} in the store")
 
         self._ensure_existing(path, True)
 
@@ -49,6 +53,7 @@ class InMemoryStore:
 
     def add(self, file_or_directory: StorageElement):
         """ Adds new file or directory. """
+        loggr.log_technical(f"Adds element {file_or_directory.path} into the store")
 
         if len(self.resources) == 0 and not isinstance(file_or_directory, TopDirectory):
             raise ValueError("The store is empty, start by adding the TopDirectory first")
@@ -64,6 +69,7 @@ class InMemoryStore:
 
     def remove(self, file_or_directory: StorageElement):
         """ Removes the existing file or directory. """
+        loggr.log_technical(f"Removing element {file_or_directory.path} from the store")
 
         if len(self.resources) > 0 and isinstance(file_or_directory, TopDirectory):
             raise ValueError("The store is NOT empty, you cannot remove its TopDirectory")
@@ -79,6 +85,7 @@ class InMemoryStore:
 
     def replace(self, original_file_or_directory: StorageElement, new_file_or_directory: StorageElement):
         """ Replaces the existing file or directory by another one. """
+        loggr.log_technical(f"Replaces element {original_file_or_directory.path} in the store")
 
         self.remove(original_file_or_directory)
         self.add(new_file_or_directory)
@@ -104,18 +111,28 @@ class InMemoryStorageModifier(StorageModifier):
         self.store = store
 
     def create_directory(self, owner_directory_path: Path, directory: Directory):
+        loggr.log_detailed(f"Creating directory {directory.path}")
+
         self.store.add(directory)
 
     def remove_directory(self, owner_directory_path: Path, directory: Directory):
+        loggr.log_detailed(f"Removing directory {directory.path}")
+
         self.store.remove(directory)
 
     def create_file(self, owner_directory_path: Path, file: File, contents_supplier: FileContentsSupplier):
+        loggr.log_detailed(f"Creating file {file.path}")
+
         self.store.add(file)
 
     def remove_file(self, owner_directory_path: Path, file: File):
+        loggr.log_detailed(f"Removing file {file.path}")
+
         self.store.remove(file)
 
     def update_file(self, owner_directory_path: Path, file: File, contents_supplier: FileContentsSupplier):
+        loggr.log_detailed(f"Updating directory {file.path}")
+
         current_file = self.store.get_element(file.path)
 
         self.store.replace(current_file, file)

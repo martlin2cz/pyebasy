@@ -2,9 +2,12 @@ import sys
 
 import pathlib
 
+import loggr
 from cache_sqlite import SqliteCache
 from storage_filesystem import DefaultFileSystemStorage
 from synchronizer_impls import DefaultSynchronizer
+
+loggr.set_verbocity('tracing')
 
 source_cache = SqliteCache(pathlib.Path('source.db'))
 destination_cache = SqliteCache(pathlib.Path('destination.db'))

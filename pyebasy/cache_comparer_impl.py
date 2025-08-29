@@ -1,6 +1,7 @@
 import pathlib
 from typing import Iterable, Dict
 
+import loggr
 from commons_base import CacheComparer, Cache, ROOT_PATH, DirectoryContentsComparer, DirectoryContents
 from commons_helpers import DirectoryContentsDifferencesHelper
 from datas import DirectoryContentsDifference, CachesDifference
@@ -21,11 +22,16 @@ class DefaultCacheComparer(CommonCacheComparer):
         super().__init__(directory_contents_comparer)
 
     def compute(self, source: Cache, destination: Cache) -> CachesDifference:
+        loggr.log_informative("Comparing caches ...")
+
         difference = self.do_compute(ROOT_PATH, source, destination, self.directory_contents_comparer)
 
+        loggr.log_informative("Caches compared!")
         return CachesDifference(difference)
 
     def do_compute(self, path: pathlib.Path, source_cache: Cache, destination_cache: Cache, directory_contents_comparer: DirectoryContentsComparer) -> Dict[pathlib.Path, DirectoryContentsDifference]:
+        loggr.log_detailed(f"Comparing caches of {path}")
+
         source_contents = source_cache.get_contents(path)
         destination_contents = destination_cache.get_contents(path)
 
