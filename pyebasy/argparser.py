@@ -47,11 +47,14 @@ def construct_parser() -> ArgumentParser:
                         metavar="update_destination_cache",
                         help="Enables/skips the destination cache update (enabled by default)")
 
+    parser.add_argument("--dry-run", "--dry", action="store_true",
+                        help="Dry-runs (no actual changes will be performed, only printed)")
+
     parser.add_argument("SOURCE_PATH", type=str, action="store",
                         help="The path to the directory which to synchronize (the source)")
 
     parser.add_argument("DESTINATION_PATH", type=str, action="store",
-                    help="The path to the directory which to synchronize to (the destination)")
+                        help="The path to the directory which to synchronize to (the destination)")
 
     return parser
 

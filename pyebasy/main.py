@@ -6,6 +6,7 @@ import argparser
 import loggr
 from cache_inmemory import InMemoryCache
 from cache_sqlite import SqliteCache
+from storage_dry_run import DryRunStorage
 from storage_filesystem import DefaultFileSystemStorage
 from synchronizer_impls import DefaultSynchronizer
 
@@ -23,14 +24,17 @@ def prepare_cache(cache_kind: str, name: str):
         return InMemoryCache()
 
 
-def prepare_storage(storage_path_str: str, name: str):
-    loggr.log_detailed(f"Will use {storage_path_str} path for {name} storage")
+def prepare_storage(storage_path_str: str, name: str, dry_run: bool = False):
+    loggr.log_detailed(f"Will use {storage_path_str} path for {name} storage{' with dry run enabled' if dry_run else ''}")
 
     storage_path = pathlib.Path(storage_path_str)
     if not storage_path.is_dir():
         raise ValueError(f"Directory {storage_path} doesn't exist")
 
-    return DefaultFileSystemStorage(storage_path)
+    storage = DefaultFileSystemStorage(storage_path)
+    if dry_run:
+        storage = DryRunStorage.wrap(storage)
+    return storage
 
 
 def run():
@@ -40,7 +44,7 @@ def run():
     destination_cache = prepare_cache(parsed.source_cache_format, "destination")
 
     source_storage = prepare_storage(parsed.SOURCE_PATH, "source")
-    destination_storage = prepare_storage(parsed.DESTINATION_PATH, "destination")
+    destination_storage = prepare_storage(parsed.DESTINATION_PATH, "destination", parsed.dry_run)
 
     synchronizer = DefaultSynchronizer(
         source_cache=source_cache,
