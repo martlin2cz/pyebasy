@@ -7,7 +7,7 @@ from pathlib import Path
 
 from commons_base import Storage, StorageLister, DirectoryContents, StorageModifier, FileContentsSupplier
 from commons_helpers import CommonStorage, DirectoryContentsBuilder
-from datas import File, Directory
+from datas import File, Directory, StorageElement
 
 
 class DefaultFileSystemStorageLister(StorageLister):
@@ -59,34 +59,35 @@ class DefaultFileSystemStorageModifier(StorageModifier):
         self.top_directory_location = top_directory_location
 
     def create_directory(self, owner_directory_path: Path, directory: Directory):
-        path = directory.path
-        resolved_path = self.top_directory_location / path
+        resolved_path = self._resolved_path_of(directory)
         os.mkdir(resolved_path)
 
     def remove_directory(self, owner_directory_path: Path, directory: Directory):
-        path = directory.path
-        resolved_path = self.top_directory_location / path
+        resolved_path = self._resolved_path_of(directory)
         os.rmdir(resolved_path)
 
     def create_file(self, owner_directory_path: Path, file: File, contents_supplier: FileContentsSupplier):
         self._do_write_file(file, contents_supplier)
 
     def remove_file(self, owner_directory_path: Path, file: File):
-        path = file.path
-        resolved_path = self.top_directory_location / path
+        resolved_path = self._resolved_path_of(file)
         os.remove(resolved_path)
 
     def update_file(self, owner_directory_path: Path, file: File, contents_supplier: FileContentsSupplier):
         self._do_write_file(file, contents_supplier)
 
     def _do_write_file(self, file: File, contents_supplier: FileContentsSupplier):
-        path = file.path
+        resolved_path = self._resolved_path_of(file)
         contents_path = contents_supplier.get_file_contents(file)
-        if contents_supplier.is_file_contents_temporary(file):
-            shutil.move(contents_path, path)
-        else:
-            shutil.copy(contents_path, path)
 
+        if contents_supplier.is_file_contents_temporary(file):
+            shutil.move(contents_path, resolved_path)
+        else:
+            shutil.copy(contents_path, resolved_path)
+
+    def _resolved_path_of(self, element: StorageElement) -> pathlib.Path:
+        path = element.path
+        return self.top_directory_location / path
 
 class DefaultFileSystemContentsSupplier(FileContentsSupplier):
     """ The default file system file contents supplier. """
