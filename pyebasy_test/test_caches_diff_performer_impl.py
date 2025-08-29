@@ -1,5 +1,5 @@
 import pathlib
-from unittest import TestCase
+from unittest import TestCase, skip
 
 import testing_data
 from caches_diff_performer_impl import DefaultCachesDifferencePerformer
@@ -11,14 +11,36 @@ from storage_inmemory import InMemoryStorageModifier, InMemoryFileContentsSuppli
 
 
 class TestDefaultCachesDifferencePerformer(TestCase):
+    @skip("Diff cannot be empty, allways has to have at least the root dir")
     def test_apply_empty_diff_to_empty_store(self):
         diff = CachesDifference({})
         store = InMemoryStore()
 
         self._do_apply_diff(diff, store)
 
+    def test_apply_minimal_diff_to_empty_store(self):
+        empty_dir_diff = DirectoryContentsDifferencesHelper.same(DirectoryContents([], []))
+        diff = CachesDifference({pathlib.Path("."): empty_dir_diff})
+        store = InMemoryStore()
+
+        self._do_apply_diff(diff, store)
+
+
+    @skip("Diff cannot be empty, allways has to have at least the root dir")
     def test_apply_empty_diff_to_full_store(self):
         diff = CachesDifference({})
+
+        store = InMemoryStore()
+        test_data = testing_data.SomeTestingStorageElements(True, False)
+        test_data.foreach_element(lambda e: store.add(e))
+
+        self._do_apply_diff(diff, store)
+
+        test_data.foreach_element(lambda e: self.assertEqual(e, store.get_element(e.path)))
+
+    def test_apply_minimal_diff_to_full_store(self):
+        empty_dir_diff = DirectoryContentsDifferencesHelper.same(DirectoryContents([], []))
+        diff = CachesDifference({pathlib.Path("."): empty_dir_diff})
 
         store = InMemoryStore()
         test_data = testing_data.SomeTestingStorageElements(True, False)

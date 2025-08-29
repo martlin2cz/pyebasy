@@ -152,8 +152,12 @@ class CacheComparer(ABC):
 class DirectoryContentsDifferencePerformer(ABC):
     """ The tool which applies the directory contents difference to a particular storage directory. """
 
-    def execute(self, directory_path: Path, diff: DirectoryContentsDifference, contents_supplier: FileContentsSupplier, storage_modifier: StorageModifier):
-        """ Executes the directory contents difference in the specified storage. """
+    def do_before_subtree(self, directory_path: Path, diff: DirectoryContentsDifference, contents_supplier: FileContentsSupplier, storage_modifier: StorageModifier):
+        """ Executes the directory contents difference in the specified storage, before the subtree got processed. """
+        pass
+
+    def do_after_subtree(self, directory_path: Path, diff: DirectoryContentsDifference, contents_supplier: FileContentsSupplier, storage_modifier: StorageModifier):
+        """ Executes the directory contents difference in the specified storage, after the subtree got processed. """
         pass
 
 

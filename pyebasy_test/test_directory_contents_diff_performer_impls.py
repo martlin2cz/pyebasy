@@ -21,7 +21,8 @@ class TestDefaultContentsDifferencePerformer(TestCase):
     def test_empty_dir_empty_diff(self):
         diff = DirectoryContentsDifference([], [], [], [], [], [], [])
 
-        self.performer.execute(self.path, diff, self.contents_supplier, self.storage_modifier)
+        self.performer.do_before_subtree(self.path, diff, self.contents_supplier, self.storage_modifier)
+        self.performer.do_after_subtree(self.path, diff, self.contents_supplier, self.storage_modifier)
 
     def test_empty_dir_full_diff(self):
         # prepare testing structure
@@ -64,7 +65,8 @@ class TestDefaultContentsDifferencePerformer(TestCase):
             files_to_update=[testing_data.MODIFIED_LIPSUM_FILE],
             files_to_keep=[testing_data.LAZY_FILE])
 
-        self.performer.execute(self.path, diff, self.contents_supplier, self.storage_modifier)
+        self.performer.do_before_subtree(self.path, diff, self.contents_supplier, self.storage_modifier)
+        self.performer.do_after_subtree(self.path, diff, self.contents_supplier, self.storage_modifier)
 
         # ensure the modified directory contents is the desired one
         self.assertEqual(
