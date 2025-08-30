@@ -1,0 +1,167 @@
+import os
+from unittest import TestCase
+
+from pathlib import Path
+
+import testing_data
+from datas import Directory, File
+from storage_inmemory import InMemoryStore, InMemoryStorageLister, InMemoryStorageModifier, \
+    InMemoryFileContentsSupplier
+
+
+class TestInMemoryStore(TestCase):
+    def setUp(self):
+        self.test_data = testing_data.SomeTestingStorageElements(True, False)
+
+    def test_add_remove_directory(self):
+        store = InMemoryStore()
+        store.add(testing_data.ROOT_DIRECTORY)
+        store.add(testing_data.FOO_DIRECTORY)
+
+        # before BAR added
+        foo_contents_before_bar_added = store.get_children(testing_data.FOO_DIRECTORY.path)
+        self.assertNotIn(testing_data.BAR_DIRECTORY, foo_contents_before_bar_added.child_directories)
+
+        store.add(testing_data.BAR_DIRECTORY)
+
+        # after BAR added
+        foo_contents_after_bar_added = store.get_children(testing_data.FOO_DIRECTORY.path)
+        self.assertIn(testing_data.BAR_DIRECTORY, foo_contents_after_bar_added.child_directories)
+
+        store.remove(testing_data.BAR_DIRECTORY)
+
+        # after BAR removed
+        foo_contents_after_bar_removed = store.get_children(testing_data.FOO_DIRECTORY.path)
+        self.assertNotIn(testing_data.BAR_DIRECTORY, foo_contents_after_bar_removed.child_directories)
+
+    def test_add_remove_replace_file(self):
+        store = InMemoryStore()
+        store.add(testing_data.ROOT_DIRECTORY)
+
+        # before LIPSUM added
+        root_contents = store.get_children(testing_data.ROOT_DIRECTORY_PATH)
+        self.assertNotIn(testing_data.LIPSUM_FILE, root_contents.child_files)
+        self.assertNotIn(testing_data.MODIFIED_LIPSUM_FILE, root_contents.child_files)
+
+        store.add(testing_data.LIPSUM_FILE)
+
+        # after LIPSUM added
+        root_contents = store.get_children(testing_data.ROOT_DIRECTORY_PATH)
+        self.assertIn(testing_data.LIPSUM_FILE, root_contents.child_files)
+        self.assertNotIn(testing_data.MODIFIED_LIPSUM_FILE, root_contents.child_files)
+
+        store.replace(testing_data.LIPSUM_FILE, testing_data.MODIFIED_LIPSUM_FILE)
+
+        # after LIPSUM replaced
+        root_contents = store.get_children(testing_data.ROOT_DIRECTORY_PATH)
+        self.assertNotIn(testing_data.LIPSUM_FILE, root_contents.child_files)
+        self.assertIn(testing_data.MODIFIED_LIPSUM_FILE, root_contents.child_files)
+
+        store.remove(testing_data.MODIFIED_LIPSUM_FILE)
+
+        # after LIPSUM removed
+        root_contents = store.get_children(testing_data.ROOT_DIRECTORY_PATH)
+        self.assertNotIn(testing_data.LIPSUM_FILE, root_contents.child_files)
+        self.assertNotIn(testing_data.MODIFIED_LIPSUM_FILE, root_contents.child_files)
+
+    def test_get_element_and_children(self):
+        store = InMemoryStore()
+        self.test_data.foreach_element(
+            lambda e: store.add(e)
+        )
+
+        # Check contents of a few directories
+        self.assertEqual(testing_data.ROOT_DIRECTORY, store.get_element(testing_data.ROOT_DIRECTORY_PATH))
+        foo_contents = store.get_children(testing_data.ROOT_DIRECTORY_PATH)
+        self.assertIn(testing_data.FOO_DIRECTORY, foo_contents.child_directories)
+        self.assertIn(testing_data.QUX_DIRECTORY, foo_contents.child_directories)
+        self.assertIn(testing_data.LIPSUM_FILE, foo_contents.child_files)
+
+        self.assertEqual(testing_data.BAR_DIRECTORY, store.get_element(testing_data.BAR_DIRECTORY.path))
+        bar_contents = store.get_children(testing_data.BAR_DIRECTORY.path)
+        self.assertIn(testing_data.BAZ_DIRECTORY, bar_contents.child_directories)
+        self.assertIn(testing_data.AUX_DIRECTORY, bar_contents.child_directories)
+
+        self.assertEqual(testing_data.AUX_DIRECTORY, store.get_element(testing_data.AUX_DIRECTORY.path))
+        aux_contents = store.get_children(testing_data.AUX_DIRECTORY.path)
+        self.assertIn(testing_data.DOLOR_FILE, aux_contents.child_files)
+        self.assertIn(testing_data.IPSUM_FILE, aux_contents.child_files)
+
+        self.assertEqual(testing_data.LOREM_FILE, store.get_element(testing_data.LOREM_FILE.path))
+        self.assertEqual(testing_data.IPSUM_FILE, store.get_element(testing_data.IPSUM_FILE.path))
+        self.assertEqual(testing_data.LIPSUM_FILE, store.get_element(testing_data.LIPSUM_FILE.path))
+
+
+class TestInMemoryStorageLister(TestCase):
+    def setUp(self):
+        self.test_data = testing_data.SomeTestingStorageElements(True, False)
+
+        store = InMemoryStore()
+        self.test_data.foreach_element(
+            lambda e: store.add(e)
+        )
+
+        self.lister = InMemoryStorageLister(store)
+
+    def test_list_directory(self):
+        contents = self.lister.list_directory(testing_data.ROOT_DIRECTORY_PATH)
+        self.assertIn(testing_data.FOO_DIRECTORY, contents.child_directories)
+        self.assertIn(testing_data.LIPSUM_FILE, contents.child_files)
+
+
+class TestInMemoryStorageModifier(TestCase):
+    def setUp(self):
+        self.test_data = testing_data.SomeTestingStorageElements(True,False)
+
+        self.store = InMemoryStore()
+        self.test_data.foreach_element(
+                                          lambda e: self.store.add(e)
+                                          )
+        self.modifier = InMemoryStorageModifier(self.store)
+        self.contents_supplier = InMemoryFileContentsSupplier()
+
+    def test_create_directory(self):
+        self.modifier.create_directory(testing_data.BROWN_DIRECTORY.path.parent, testing_data.BROWN_DIRECTORY)
+
+        owner_contents = self.store.get_children(testing_data.FOO_DIRECTORY.path)
+        self.assertIn(testing_data.BROWN_DIRECTORY, owner_contents.child_directories)
+
+    def test_remove_directory(self):
+        self.modifier.remove_file(testing_data.LOREM_FILE.path.parent, testing_data.LOREM_FILE)
+        self.modifier.remove_directory(testing_data.BAZ_DIRECTORY.path.parent, testing_data.BAZ_DIRECTORY)
+
+        owner_contents = self.store.get_children(testing_data.BAR_DIRECTORY.path)
+        self.assertNotIn(testing_data.BAZ_DIRECTORY, owner_contents.child_directories)
+
+    def test_create_file(self):
+        self.modifier.create_file(testing_data.BROWN_FILE.path.parent, testing_data.BROWN_FILE, self.contents_supplier)
+
+        owner_contents = self.store.get_children(testing_data.FOO_DIRECTORY.path)
+        self.assertIn(testing_data.BROWN_FILE, owner_contents.child_files)
+
+    def test_remove_file(self):
+        self.modifier.remove_file(testing_data.LOREM_FILE.path.parent, testing_data.LOREM_FILE)
+
+        owner_contents = self.store.get_children(testing_data.BAZ_DIRECTORY.path)
+        self.assertNotIn(testing_data.LOREM_FILE, owner_contents.child_files)
+
+    def test_update_file(self):
+        self.modifier.update_file(testing_data.LIPSUM_FILE.path.parent, testing_data.MODIFIED_LIPSUM_FILE, self.contents_supplier)
+
+        owner_contents = self.store.get_children(testing_data.ROOT_DIRECTORY_PATH)
+        self.assertNotIn(testing_data.LIPSUM_FILE, owner_contents.child_files)
+        self.assertIn(testing_data.MODIFIED_LIPSUM_FILE, owner_contents.child_files)
+
+
+class TestInMemoryFileContentsSupplier(TestCase):
+    def setUp(self):
+        self.contents_supplier = InMemoryFileContentsSupplier()
+
+    def test_get_file_contents(self):
+        file = testing_data.LIPSUM_FILE
+
+        path = self.contents_supplier.get_file_contents(file)
+        contents = path.read_text()
+
+        self.assertTrue(self.contents_supplier.is_file_contents_temporary(file))
+        self.assertEqual("Boo, this is sample file lipsum.txt which shall have 321 bytes.\n", contents)

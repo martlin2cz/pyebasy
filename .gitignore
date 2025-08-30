@@ -196,3 +196,11 @@ cython_debug/
 # idea files
 .idea/*
 
+# caches
+cache.db
+cache.sqlite
+source.db
+destination.db
+
+# logfiles
+pyebasy.log
