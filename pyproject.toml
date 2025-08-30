@@ -1,0 +1,14 @@
+[project]
+name = "pyebasy"
+version = "1.0"
+readme = "README.md"
+
+requires-python = ">= 3.9"
+
+dependencies = [
+    "pathlib>=1.0.1",
+    "argparse>=1.4.0"
+]
+
+[project.scripts]
+pyebasy-main = "pyebasy:main"

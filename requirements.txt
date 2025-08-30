@@ -1,4 +1,2 @@
 pathlib
-datacompy
-pandas
 argparse

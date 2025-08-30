@@ -1,12 +1,11 @@
-from typing import Dict
 
-import pathlib
 from argparse import ArgumentParser
 
 import argparse
-
 import loggr
 
+
+VERSION="1.0"
 
 SQLITE_CACHE = "sqlite"
 IN_MEMORY_CACHE = "in-memory"
@@ -16,16 +15,19 @@ def construct_parser() -> ArgumentParser:
     parser = argparse.ArgumentParser("pyebasy")
 
     # the logging arguments
-    parser.add_argument("--quiet", "-q", action="store_true",
+    parser.add_argument("--version", "-v", action="version",
+                        version=VERSION)
+
+    parser.add_argument("--quiet", "-Q", action="store_true",
                         help="Outputs no informative messages")
 
-    parser.add_argument("--normal", "-l", action="store_true", default="true",
+    parser.add_argument("--normal", "-L", action="store_true", default="true",
                         help="Sets the logging to normal, overall, logging (enabled by default)")
 
-    parser.add_argument("--verbose", "-v", action="store_true",
+    parser.add_argument("--verbose", "-V", action="store_true",
                         help="Outputs more verbose messages")
 
-    parser.add_argument("--tracing", "-t", action="store_true",
+    parser.add_argument("--tracing", "-T", action="store_true",
                         help="Outputs detailed tracing informations")
 
     # caches
